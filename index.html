@@ -1078,7 +1078,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
       <div class="page-head"><div><div class="crumb">工作区 / AI 问答检索</div><h1>AI 问答检索</h1>
         <p id="qa-sub">基于你有权访问的知识库回答。问不出敏感信息、问不出超权限内容、问不出过期或错版本——试试下面的问题。</p></div></div>
       <div class="qa-suggest">
-        <button class="qa-sug" onclick="ask('sensitive')">客户张伟的银行卡号是多少？</button>
+        <button class="qa-sug" onclick="ask('sensitive')">客户张工演示的银行卡号是多少？</button>
         <button class="qa-sug" onclick="ask('perm')">财务部的工资表里，最高工资是多少？</button>
         <button class="qa-sug" onclick="ask('version')">采购合同的最终金额是多少？</button>
         <button class="qa-sug" onclick="ask('normal')">销售手册里的报价流程是什么？</button>
@@ -1175,7 +1175,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 /* ---------- mock 数据 ---------- */
 var KBS=[
   {id:1,name:'销售知识库',icon:'kbi-1',ic:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',desc:'客户案例、报价模板、销售手册',docs:12,grant:'销售部 + 销售总监',people:12,staffAccess:true,creator:'周颜',created:'2026-03-12',cycle:'每周一次',roles:[['销售部','可读','部门'],['销售总监','可读·可管理','成员'],['周颜','创建者·全权','成员']]},
-  {id:2,name:'技术知识库',icon:'kbi-2',ic:'M16 18l6-6-6-6M8 6l-6 6 6 6',desc:'技术方案、架构文档、项目资料',docs:34,grant:'技术部',people:12,staffAccess:false,creator:'李工演示',created:'2026-02-20',cycle:'每两周一次',roles:[['技术部','可读','部门'],['研发组','可读·可管理','项目'],['李工','创建者·全权','成员']]},
+  {id:2,name:'技术知识库',icon:'kbi-2',ic:'M16 18l6-6-6-6M8 6l-6 6 6 6',desc:'技术方案、架构文档、项目资料',docs:34,grant:'技术部',people:12,staffAccess:false,creator:'吴总演示',created:'2026-02-20',cycle:'每两周一次',roles:[['技术部','可读','部门'],['研发组','可读·可管理','项目'],['李工','创建者·全权','成员']]},
   {id:3,name:'全员公开库',icon:'kbi-3',ic:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M2 12h20',desc:'公司制度、产品手册、对外资料',docs:56,grant:'全体员工',people:24,staffAccess:true,creator:'周工演示',created:'2026-01-08',cycle:'每月一次',roles:[['全体员工','可读','全员'],['行政部','可读·可管理','部门'],['周颜','创建者·全权','成员']]},
   {id:4,name:'人事知识库',icon:'kbi-4',ic:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0 0',desc:'花名册、薪酬制度、考勤规则',docs:18,grant:'HR + 管理层',people:5,staffAccess:false,creator:'王敏',created:'2026-02-01',cycle:'每周一次',roles:[['HR','可读·可管理','部门'],['管理层','可读','虚拟'],['王敏','创建者·全权','成员']]},
 ];
@@ -1481,7 +1481,7 @@ function collapseReportRow(){
 
 /* QA 四个问不出 */
 var ANSWERS={
-  sensitive:{q:'客户张伟的银行卡号是多少？',blocked:false,a:'根据「销售知识库 · 2026客户案例集」，张伟的银行卡号为 <b>6228 **** **** **** 012</b>（已脱敏）。完整卡号属敏感信息，不在 AI 问答中提供。',cite:'来源：2026客户案例集.docx · 已脱敏'},
+  sensitive:{q:'客户张工演示的银行卡号是多少？',blocked:false,a:'根据「销售知识库 · 2026客户案例集」，张工演示的银行卡号为 <b>6228 **** **** **** 012</b>（已脱敏）。完整卡号属敏感信息，不在 AI 问答中提供。',cite:'来源：2026客户案例集.docx · 已脱敏'},
   perm:{q:'财务部的工资表里，最高工资是多少？',blocked:true,a:'未找到你有权访问的相关知识。工资相关内容在「人事知识库」，你（市场部）没有该库的访问权限，因此无法检索。'},
   version:{q:'采购合同的最终金额是多少？',blocked:false,a:'根据「销售知识库」中合并后的当前版本，采购合同最终金额为 <b>¥1,280,000</b>。此前存在 6 个历史版本，已合并，旧版本不参与问答以免误导。',cite:'来源：采购合同_最终版.docx · v7（已合并）'},
   normal:{q:'销售手册里的报价流程是什么？',blocked:false,a:'报价流程分四步：① 客户需求确认 → ② 套用报价模板核算成本 → ③ 销售总监审批 → ④ 正式报价单发出。',cite:'来源：销售手册.pdf · 第 3 章'},
