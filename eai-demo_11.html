@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EAI · 企业数据上 AI（Demo）</title>
+<style>
+:root{
+  --bg:#fafafa; --card:#ffffff; --fg:#0a0a0a;
+  --muted:#f4f4f5; --muted-fg:#71717a; --subtle:#a1a1aa;
+  --border:#e4e4e7; --border-strong:#d4d4d8;
+  --primary:#18181b; --radius:8px;
+  --red:#dc2626; --red-bg:#fef2f2; --red-bd:#fecaca;
+  --amber:#d97706; --amber-bg:#fffbeb; --amber-bd:#fde68a;
+  --green:#16a34a; --green-bg:#f0fdf4; --green-bd:#bbf7d0;
+  --blue:#2563eb; --blue-bg:#eff6ff; --blue-bd:#bfdbfe;
+  --brand:#534ab7; --brand-bg:#eeedfe; --brand-bd:#d8d5f5; --brand-dk:#3c3489;
+  --sh-sm:0 1px 2px 0 rgb(0 0 0 / .04);
+  --sh:0 1px 3px 0 rgb(0 0 0 / .06),0 1px 2px -1px rgb(0 0 0 / .06);
+  --sh-lg:0 10px 30px -8px rgb(0 0 0 / .18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Arial,sans-serif;background:var(--bg);color:var(--fg);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+
+/* sidebar */
+.side{background:var(--card);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:3px}
+.side-brand{display:flex;align-items:center;gap:9px;padding:6px 8px 14px}
+.bmark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+.bname{font-weight:600;font-size:14px;letter-spacing:-.01em}.bsub{font-size:11px;color:var(--subtle)}
+.nav-label{font-size:11px;color:var(--subtle);font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:12px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:6px;color:var(--muted-fg);font-size:13.5px;font-weight:500;border:none;background:none;width:100%;text-align:left;cursor:pointer}
+.nav-item svg{width:17px;height:17px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8}
+.nav-item:hover{background:var(--muted);color:var(--fg)}
+.nav-item.active{background:var(--muted);color:var(--fg)}
+.nav-badge{margin-left:auto;font-size:11px;padding:0 6px;border-radius:999px;font-weight:600;line-height:17px;background:var(--brand-bg);color:var(--brand)}
+.nav-badge.red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.role-switch{margin:8px 8px 4px;padding:8px;background:var(--muted);border-radius:8px}
+.role-switch label{font-size:10.5px;color:var(--subtle);font-weight:600;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px}
+.role-switch select{width:100%;height:30px;border:1px solid var(--border-strong);border-radius:6px;font-size:12.5px;background:var(--card);padding:0 8px}
+.side-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--border)}
+.poweredby{font-size:10.5px;color:var(--subtle);text-align:center;padding:4px}
+.userfoot{display:flex;align-items:center;gap:9px;padding:6px 8px}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--brand-bg);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.who{font-size:12.5px;font-weight:500}.who small{display:block;color:var(--subtle);font-size:11px}
+
+/* main */
+.main{padding:24px 28px;overflow:auto}
+.crumb{font-size:12.5px;color:var(--subtle);margin-bottom:6px}
+.crumb a{color:var(--brand);text-decoration:none;cursor:pointer}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px}
+.page-head h1{font-size:20px;font-weight:600;letter-spacing:-.02em}
+.page-head p{color:var(--muted-fg);font-size:13.5px;margin-top:3px;max-width:72ch}
+.btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:7px;border:1px solid var(--border-strong);background:var(--card);font-size:13px;font-weight:500;color:var(--fg);cursor:pointer;transition:.12s}
+.btn:hover{background:var(--muted)}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:#27272a}
+.btn-brand{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn-brand:hover{background:#453ea0}
+
+.page{display:none}.page.on{display:block}
+
+/* KB grid (用户视角入口) */
+.kbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:20px}
+
+/* 文档页两栏：知识库导航 + 文档内容 */
+.kbd-layout{display:grid;grid-template-columns:88px 1fr;gap:18px;align-items:start}
+.kb-rail{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh-sm);padding:10px;display:flex;flex-direction:column;gap:7px;position:sticky;top:24px}
+.rail-item{position:relative;width:68px;height:64px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:.12s;border:1.5px solid transparent}
+.rail-item:hover{background:var(--muted)}
+.rail-item.on{background:var(--brand-bg);border-color:var(--brand)}
+.rail-ic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rail-ic svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2}
+.rail-name{font-size:9.5px;color:var(--muted-fg);font-weight:500;text-align:center;line-height:1.1;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rail-item.on .rail-name{color:var(--brand-dk);font-weight:600}
+.rail-sep{height:1px;background:var(--border);margin:2px 6px}
+.rail-add{width:68px;height:46px;border-radius:12px;border:1.5px dashed var(--border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--subtle);transition:.12s}
+.rail-add:hover{background:var(--muted);color:var(--fg);border-color:var(--muted-fg)}
+.rail-add svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+/* 返回箭头 */
+.back-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--border-strong);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted-fg);flex-shrink:0;transition:.12s;margin-top:2px}
+.back-btn:hover{background:var(--muted);color:var(--fg)}
+.back-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* 视图切换 */
+.view-toggle{display:flex;background:var(--muted);border-radius:8px;padding:3px;gap:2px}
+.vt-btn{width:32px;height:30px;border:none;background:none;border-radius:6px;cursor:pointer;color:var(--muted-fg);display:flex;align-items:center;justify-content:center}
+.vt-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.vt-btn.on{background:var(--card);color:var(--fg);box-shadow:var(--sh-sm)}
+
+/* 知识库卡片视图 */
+.kb-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:18px}
+.kbcard2{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh-sm);overflow:hidden;transition:.12s}
+.kbcard2:hover{box-shadow:var(--sh);border-color:var(--border-strong)}
+.kbcard2-body{padding:18px;cursor:pointer}
+.kbcard2-top{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+.kbcard2-ic{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kbcard2-ic svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2}
+.kbcard2-name{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.kbcard2-sub{font-size:12px;color:var(--subtle);margin-top:1px}
+.kbcard2-stats{display:flex;gap:16px;padding-top:13px;border-top:1px solid var(--border)}
+.kbc2-stat{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted-fg)}
+.kbc2-stat svg{width:14px;height:14px;stroke:var(--subtle);fill:none;stroke-width:2;flex-shrink:0}
+.kbc2-stat b{color:var(--fg);font-weight:600}
+/* 卡片底部图标化设置入口 */
+.kbcard2-actions{display:flex;border-top:1px solid var(--border)}
+.kbc2-act{flex:1;height:42px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--muted-fg);font-size:11.5px;transition:.12s;border-right:1px solid var(--border)}
+.kbc2-act:last-child{border-right:none}
+.kbc2-act:hover{background:var(--muted);color:var(--brand)}
+.kbc2-act svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* 知识库列表视图 */
+.kb-rows{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.kbrow{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);padding:14px 16px;transition:.12s}
+.kbrow:hover{border-color:var(--border-strong)}
+.kbrow-main{display:flex;align-items:center;gap:13px;flex:1;min-width:0;cursor:pointer}
+.kbrow-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kbrow-ic svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:2}
+.kbrow-name{font-size:14px;font-weight:600}
+.kbrow-sub{font-size:12px;color:var(--subtle);margin-top:1px}
+.kbrow-stats{display:flex;gap:18px;flex-shrink:0;margin-right:6px}
+.kbrow-stat{text-align:center}
+.kbrow-stat-n{font-size:14px;font-weight:700}
+.kbrow-stat-l{font-size:10.5px;color:var(--subtle)}
+.kbrow-acts{display:flex;gap:4px;flex-shrink:0}
+.kbrow-act{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--subtle);transition:.12s}
+.kbrow-act:hover{background:var(--muted);color:var(--brand)}
+.kbrow-act svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* 设置抽屉内容 */
+.kbset-hero{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fcfcfc;border:1px solid var(--border);border-radius:11px;margin-bottom:18px}
+.kbset-hero-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kbset-hero-ic svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:2}
+.kbset-seg{display:flex;background:var(--muted);border-radius:8px;padding:3px;gap:2px;margin-bottom:18px}
+.kbset-seg button{flex:1;height:34px;border:none;background:none;border-radius:6px;cursor:pointer;color:var(--muted-fg);display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:500}
+.kbset-seg button svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.kbset-seg button.on{background:var(--card);color:var(--fg);box-shadow:var(--sh-sm)}
+.iset-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}
+.iset-row:last-child{border-bottom:none}
+.iset-ic{width:34px;height:34px;border-radius:9px;background:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted-fg)}
+.iset-ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2}
+.iset-meta{flex:1;min-width:0}
+.iset-k{font-size:12.5px;color:var(--muted-fg)}
+.iset-v{font-size:13.5px;font-weight:600;margin-top:1px}
+.iset-ctrl{flex-shrink:0}
+.iset-select{height:32px;border:1px solid var(--border-strong);border-radius:7px;font-size:12.5px;background:var(--card);padding:0 8px;cursor:pointer}
+/* 权限角色行（抽屉内） */
+.prole{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border)}
+.prole:last-child{border-bottom:none}
+.prole-av{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.pr-dept{background:var(--blue-bg);color:var(--blue)}.pr-proj{background:#fef3e2;color:var(--amber)}
+.pr-virt{background:var(--brand-bg);color:var(--brand)}.pr-all{background:var(--green-bg);color:var(--green)}.pr-member{background:var(--muted);color:var(--muted-fg)}
+.prole-meta{flex:1;min-width:0}
+.prole-name{font-size:13px;font-weight:500}
+.prole-scope{font-size:11.5px;color:var(--subtle)}
+.prole-perm{font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--muted);color:var(--muted-fg);white-space:nowrap}
+.prole-perm.manage{background:var(--brand-bg);color:var(--brand)}.prole-perm.owner{background:var(--amber-bg);color:var(--amber)}
+.prole-x{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--subtle);cursor:pointer;flex-shrink:0}
+.prole-x:hover{background:var(--red-bg);color:var(--red)}
+.prole-x svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.add-role{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border:1px dashed var(--border-strong);border-radius:10px;color:var(--muted-fg);font-size:12.5px;cursor:pointer;margin-top:12px}
+.add-role:hover{background:var(--muted);color:var(--fg)}
+.add-role svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.kbcard{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);padding:18px;cursor:pointer;transition:.12s}
+.kbcard:hover{border-color:var(--border-strong);box-shadow:var(--sh)}
+.kbcard-top{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.kbicon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kbicon svg{width:21px;height:21px;stroke:#fff;fill:none;stroke-width:2}
+.kbi-1{background:#534ab7}.kbi-2{background:#2563eb}.kbi-3{background:#16a34a}.kbi-4{background:#d97706}
+.kbcard h3{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.kbcard-meta{font-size:12px;color:var(--subtle);margin-top:1px}
+.kbcard-desc{font-size:12.5px;color:var(--muted-fg);line-height:1.5;margin-bottom:12px}
+.kbcard-foot{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)}
+.kbcard-stat{font-size:12px;color:var(--muted-fg)}
+.kbcard-stat b{color:var(--fg);font-weight:600}
+.access-pill{font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--green-bg);color:var(--green);display:inline-flex;align-items:center;gap:5px}
+.access-pill svg{width:11px;height:11px;stroke:var(--green);fill:none;stroke-width:2.5}
+
+/* table */
+.toolbar{display:flex;align-items:center;gap:10px;margin:18px 0 14px;flex-wrap:wrap}
+.search{position:relative;flex:1;max-width:280px}
+.search input{width:100%;height:34px;padding:0 12px 0 34px;border:1px solid var(--border-strong);border-radius:7px;font-size:13px;background:var(--card)}
+.search input:focus{outline:none;border-color:var(--brand)}
+.search svg{position:absolute;left:11px;top:9px;width:15px;height:15px;stroke:var(--subtle);fill:none;stroke-width:2}
+.chip{height:30px;padding:0 11px;border:1px solid var(--border-strong);border-radius:999px;background:var(--card);font-size:12.5px;color:var(--muted-fg);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip.on{background:var(--fg);color:#fff;border-color:var(--fg)}
+.chip-dot{width:7px;height:7px;border-radius:50%}
+.bd-conf{background:var(--red)}.bd-int{background:var(--amber)}.bd-pub{background:var(--green)}
+.tbl{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--sh-sm);overflow:hidden}
+.tr{display:grid;align-items:center;gap:14px;padding:0 16px;height:54px;border-bottom:1px solid var(--border)}
+.tr:last-child{border-bottom:none}
+.thead{height:40px;background:#fcfcfc}
+.th{font-size:11.5px;color:var(--subtle);font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+.trow{cursor:pointer;transition:background .1s}
+.trow:hover{background:#fcfcfc}
+.fname{display:flex;align-items:center;gap:11px;min-width:0}
+.ficon{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:#fff}
+.fi-xls{background:#16794a}.fi-doc{background:#2563eb}.fi-pdf{background:#dc2626}.fi-txt{background:#71717a}
+.ftitle{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fpath{font-size:11.5px;color:var(--subtle)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:6px;white-space:nowrap}
+.b-conf{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.b-int{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+.b-pub{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.b-dot{width:6px;height:6px;border-radius:50%}
+.gov-pill{font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.g-review{background:var(--amber-bg);color:var(--amber)}
+.g-live{background:var(--green-bg);color:var(--green)}
+.g-iso{background:var(--red-bg);color:var(--red)}
+
+/* cards / sections */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);padding:20px;margin-bottom:16px}
+.sec-h{font-size:13px;font-weight:600;color:var(--muted-fg);margin:8px 2px 12px}
+
+/* promises (四个问不出) */
+.promises{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+.promise{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);padding:16px}
+.promise-ic{width:30px;height:30px;border-radius:8px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.promise-ic svg{width:16px;height:16px;stroke:var(--green);fill:none;stroke-width:2.5}
+.promise h4{font-size:13px;font-weight:600}
+.promise p{font-size:11.5px;color:var(--muted-fg);margin-top:3px}
+.promise-stat{font-size:11px;font-weight:600;color:var(--green);margin-top:8px}
+
+/* flywheel score */
+.hero{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);padding:24px;margin-bottom:16px}
+.score-row{display:flex;align-items:center;gap:22px}
+.score-num{font-size:42px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.score-old .score-num{color:var(--subtle)}.score-new .score-num{color:var(--green)}
+.score-cap{font-size:12px;color:var(--muted-fg);margin-top:4px;text-align:center}
+.bar-track{height:12px;background:var(--muted);border-radius:999px;overflow:hidden;position:relative;flex:1}
+.bar-new{position:absolute;left:0;top:0;bottom:0;width:71%;background:var(--green);border-radius:999px}
+
+/* governance workbench (预览-批准) */
+.gov-layout{display:grid;grid-template-columns:300px 1fr;gap:16px;margin-top:18px}
+.plan{padding:13px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;background:var(--card)}
+.plan.sel{border-color:var(--brand);background:var(--brand-bg)}
+.plan-name{font-size:13px;font-weight:600}
+.plan-id{font-size:11px;color:var(--subtle)}
+.plan-tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.ttag{font-size:10.5px;font-weight:500;padding:1px 7px;border-radius:5px;background:var(--muted);color:var(--muted-fg)}
+.ttag.risk{background:var(--red-bg);color:var(--red)}
+.preview-banner{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:9px;padding:11px 13px;display:flex;gap:10px;margin-bottom:14px}
+.preview-banner svg{width:17px;height:17px;stroke:var(--amber);fill:none;stroke-width:2;flex-shrink:0;margin-top:1px}
+.preview-banner b{color:#92400e;font-size:13px}.preview-banner p{color:#92400e;font-size:12px;margin-top:1px}
+.expert{background:var(--brand-bg);border:1px solid var(--brand-bd);border-radius:9px;padding:11px 13px;display:flex;gap:10px;margin-bottom:16px}
+.expert svg{width:17px;height:17px;stroke:var(--brand);fill:none;stroke-width:2;flex-shrink:0;margin-top:1px}
+.expert b{color:var(--brand-dk);font-size:12.5px}.expert p{color:var(--brand);font-size:12px;margin-top:1px;line-height:1.5}
+.tgroup{border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:12px}
+.tg-head{display:flex;align-items:center;gap:12px;padding:13px 16px;background:#fcfcfc;border-bottom:1px solid var(--border)}
+.tg-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border-strong);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.tg-check.on{background:var(--brand);border-color:var(--brand)}
+.tg-check svg{display:none;width:12px;height:12px;stroke:#fff;fill:none;stroke-width:3}
+.tg-check.on svg{display:block}
+.tg-name{font-size:13.5px;font-weight:600;flex:1}
+.tg-badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:6px;background:var(--amber-bg);color:var(--amber)}
+.tg-badge.auto{background:var(--green-bg);color:var(--green)}
+.diff{padding:11px 16px;display:grid;grid-template-columns:1fr 24px 1fr;gap:8px;align-items:center}
+.diff-before{background:var(--red-bg);color:#991b1b;padding:7px 10px;border-radius:7px;font-size:12px;text-decoration:line-through;text-decoration-color:#fca5a5}
+.diff-after{background:var(--green-bg);color:#166534;padding:7px 10px;border-radius:7px;font-size:12px}
+.diff-arrow{display:flex;justify-content:center;color:var(--subtle)}
+.diff-arrow svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.gov-foot{display:flex;align-items:center;gap:12px;padding:16px;border-top:1px solid var(--border);margin-top:8px}
+.gov-foot .info{flex:1;font-size:12.5px;color:var(--muted-fg)}
+
+/* authorize (整库授权) */
+.auth-kb{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fcfcfc;border:1px solid var(--border);border-radius:10px;margin-bottom:18px}
+.auth-kb .kbicon{width:36px;height:36px}
+.grant-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
+.grant-l{display:flex;align-items:center;gap:11px}
+.grant-av{width:30px;height:30px;border-radius:8px;background:var(--blue-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.grant-name{font-size:13px;font-weight:500}.grant-sub{font-size:11.5px;color:var(--subtle)}
+.toggle{width:38px;height:22px;border-radius:999px;background:var(--green);position:relative;cursor:pointer;flex-shrink:0}
+.toggle.off{background:var(--border-strong)}
+.toggle::after{content:"";position:absolute;top:2px;left:18px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.toggle.off::after{left:2px}
+.preview-who{background:var(--brand-bg);border:1px solid var(--brand-bd);border-radius:10px;padding:14px 16px;margin-top:6px}
+.preview-who-num{font-size:24px;font-weight:700;color:var(--brand);letter-spacing:-.02em}
+.preview-who-lab{font-size:12px;color:var(--brand-dk)}
+
+/* QA (四个问不出) */
+.chat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;min-height:340px;display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.bubble{max-width:80%;padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.55}
+.bubble.ai{background:var(--muted);align-self:flex-start;border-bottom-left-radius:4px}
+.bubble.me{background:var(--brand);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.bubble .cite{margin-top:8px;padding-top:8px;border-top:1px solid var(--border-strong);font-size:11px;color:var(--muted-fg)}
+.bubble.blocked{background:var(--red-bg);color:#991b1b;border:1px solid var(--red-bd)}
+.qa-input{display:flex;gap:10px}
+.qa-input input{flex:1;height:40px;padding:0 14px;border:1px solid var(--border-strong);border-radius:8px;font-size:13.5px}
+.qa-input input:focus{outline:none;border-color:var(--brand)}
+.qa-suggest{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.qa-sug{font-size:12px;padding:6px 12px;border:1px solid var(--border-strong);border-radius:999px;background:var(--card);cursor:pointer;color:var(--muted-fg)}
+.qa-sug:hover{background:var(--muted);color:var(--fg)}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgb(0 0 0 / .35);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+.scrim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:94vw;background:var(--card);box-shadow:var(--sh-lg);transform:translateX(100%);transition:transform .24s cubic-bezier(.32,.72,0,1);z-index:50;display:flex;flex-direction:column}
+.drawer.show{transform:translateX(0)}
+
+/* center modal（扫描来源选择） */
+.modal-scrim{position:fixed;inset:0;background:rgb(0 0 0 / .4);opacity:0;pointer-events:none;transition:.18s;z-index:55;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-scrim.show{opacity:1;pointer-events:auto}
+.modal{background:var(--card);border-radius:14px;box-shadow:var(--sh-lg);width:480px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;transform:scale(.97);transition:transform .18s}
+.modal-scrim.show .modal{transform:scale(1)}
+.modal-head{padding:20px 22px 14px;border-bottom:1px solid var(--border);position:relative}
+.modal-head h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
+.modal-head p{font-size:12.5px;color:var(--muted-fg);margin-top:3px}
+.modal-x{position:absolute;top:18px;right:20px;width:28px;height:28px;border:none;background:var(--muted);border-radius:6px;cursor:pointer;color:var(--muted-fg);font-size:16px}
+.modal-x:hover{background:var(--border)}
+.modal-body{padding:16px 22px 22px;overflow:auto}
+.src-item{display:flex;align-items:center;gap:13px;padding:15px 16px;border:1px solid var(--border);border-radius:11px;margin-bottom:11px;cursor:pointer;transition:.12s}
+.src-item:hover{border-color:var(--brand);background:var(--brand-bg)}
+.src-ic{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.src-ic svg{width:21px;height:21px;fill:none;stroke-width:2}
+.src-ic.local{background:var(--blue-bg)}.src-ic.local svg{stroke:var(--blue)}
+.src-ic.kb{background:var(--brand-bg)}.src-ic.kb svg{stroke:var(--brand)}
+.src-meta{flex:1;min-width:0}
+.src-name{font-size:14px;font-weight:600}
+.src-sub{font-size:12px;color:var(--muted-fg);margin-top:1px}
+.src-act{flex-shrink:0;color:var(--subtle);display:flex;align-items:center}
+.src-act svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
+.src-item:hover .src-act{color:var(--brand)}
+/* 二级：选择已有知识库 */
+.kb-back{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted-fg);cursor:pointer;background:none;border:none;padding:6px 0;margin-bottom:6px}
+.kb-back:hover{color:var(--fg)}
+.kb-back svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.kb-pick{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:9px;cursor:pointer;transition:.12s}
+.kb-pick:hover{border-color:var(--brand);background:var(--brand-bg)}
+.kb-pick-ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+.kb-pick-ic svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
+.kb-pick-name{font-size:13.5px;font-weight:500;flex:1}
+.kb-pick-meta{font-size:11.5px;color:var(--subtle)}
+.kb-pick-check{width:18px;height:18px;border:1.5px solid var(--border-strong);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.kb-pick.on .kb-pick-check{background:var(--brand);border-color:var(--brand)}
+.kb-pick-check svg{display:none;width:11px;height:11px;stroke:#fff;fill:none;stroke-width:3}
+.kb-pick.on .kb-pick-check svg{display:block}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* 体检分栏 */
+.checkup-grid{display:grid;grid-template-columns:1fr 150px;gap:16px;margin-top:20px;align-items:start}
+.ck-source{font-size:12px;color:var(--subtle);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ck-source .src-tag{display:inline-flex;align-items:center;gap:5px;background:var(--muted);padding:2px 9px;border-radius:6px;color:var(--muted-fg)}
+.ck-source .src-tag svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+.ck-dot{width:3px;height:3px;border-radius:50%;background:var(--border-strong)}
+/* 圆环 */
+.ring-card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);padding:26px;display:grid;grid-template-columns:auto 1fr;gap:30px;align-items:center}
+.ring{position:relative;width:150px;height:150px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-score{font-size:42px;font-weight:700;letter-spacing:-.03em;line-height:1;color:var(--red)}
+.ring-grade{margin-top:5px;font-size:11.5px;font-weight:600;padding:2px 10px;border-radius:999px;color:var(--red);background:var(--red-bg)}
+.ring-right h2{font-size:18px;font-weight:600;letter-spacing:-.02em;margin-bottom:7px}
+.ring-right p{font-size:13.5px;color:var(--muted-fg);max-width:46ch}
+.ring-stats{display:flex;gap:24px;margin-top:16px}
+.ring-stat-n{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.ring-stat-l{font-size:11.5px;color:var(--muted-fg);margin-top:1px}
+/* 侧栏次级入口 */
+.side-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);padding:10px;display:flex;flex-direction:column;gap:8px}
+.sp-icon{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 10px;border-radius:10px;cursor:pointer;transition:background .12s;border:1px solid transparent}
+.sp-icon:hover{background:var(--muted);border-color:var(--border)}
+.sp-icon-img{width:26px;height:26px;stroke:var(--muted-fg);fill:none;stroke-width:1.8}
+.sp-icon:hover .sp-icon-img{stroke:var(--brand)}
+.sp-icon-cap{font-size:11px;color:var(--subtle);font-weight:500}
+.sp-icon:hover .sp-icon-cap{color:var(--fg)}
+.dr-head{padding:18px 20px;border-bottom:1px solid var(--border);position:relative}
+.dr-close{position:absolute;top:16px;right:18px;width:28px;height:28px;border:none;background:var(--muted);border-radius:6px;cursor:pointer;color:var(--muted-fg);font-size:16px}
+.dr-body{padding:18px 20px;overflow:auto;flex:1}
+.tl-item{position:relative;padding:0 0 18px 24px;border-left:2px solid var(--border);margin-left:5px}
+.tl-item:last-child{border-left-color:transparent;padding-bottom:0}
+.tl-dot{position:absolute;left:-8px;top:1px;width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid var(--green)}
+.tl-dot.cur{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 4px var(--amber-bg)}
+.tl-dot.pending{background:var(--card);border-color:var(--border-strong)}
+.tl-time{font-size:11px;color:var(--subtle)}
+.tl-title{font-size:13px;font-weight:600}
+.tl-desc{font-size:12px;color:var(--muted-fg);margin-top:2px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--fg);color:#fff;padding:11px 18px;border-radius:9px;font-size:13px;box-shadow:var(--sh-lg);opacity:0;pointer-events:none;transition:.25s;z-index:60}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 完整报告页：手风琴 */
+.rep-wrap{max-width:880px}
+.rep-verdict{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh);padding:26px;margin-bottom:14px;display:grid;grid-template-columns:auto 1fr;gap:30px;align-items:center}
+.rep-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.rep-kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);padding:15px 16px}
+.rep-kpi-n{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.rep-kpi-l{font-size:11.5px;color:var(--muted-fg);margin-top:2px}
+.rep-alarms{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.rep-alarm{background:var(--red-bg);border:1px solid var(--red-bd);border-radius:12px;padding:14px 16px;display:flex;gap:11px}
+.rep-alarm svg{width:18px;height:18px;stroke:var(--red);fill:none;stroke-width:2;flex-shrink:0;margin-top:1px}
+.rep-alarm-t{font-size:13px;font-weight:600;color:#991b1b}
+.rep-alarm-p{font-size:12px;color:#b91c1c;margin-top:2px;line-height:1.5}
+.acc{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);margin-bottom:11px;overflow:hidden}
+.acc-head{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;transition:background .12s}
+.acc-head:hover{background:#fcfcfc}
+.acc-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.acc-ic svg{width:19px;height:19px;fill:none;stroke-width:2}
+.ai-red{background:var(--red-bg)}.ai-red svg{stroke:var(--red)}
+.ai-amber{background:var(--amber-bg)}.ai-amber svg{stroke:var(--amber)}
+.ai-blue{background:var(--blue-bg)}.ai-blue svg{stroke:var(--blue)}
+.ai-green{background:var(--green-bg)}.ai-green svg{stroke:var(--green)}
+.ai-brand{background:var(--brand-bg)}.ai-brand svg{stroke:var(--brand)}
+.acc-meta{flex:1;min-width:0}
+.acc-title{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.acc-sub{font-size:12.5px;color:var(--muted-fg);margin-top:1px}
+.acc-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.acc-stat{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.as-red{background:var(--red-bg);color:var(--red)}.as-amber{background:var(--amber-bg);color:var(--amber)}
+.as-green{background:var(--green-bg);color:var(--green)}.as-gray{background:var(--muted);color:var(--muted-fg)}
+.acc-arrow{width:20px;height:20px;stroke:var(--subtle);fill:none;stroke-width:2;transition:transform .2s}
+.acc.open .acc-arrow{transform:rotate(90deg)}
+.acc-body{display:none;padding:0 18px 18px;border-top:1px solid var(--border)}
+.acc.open .acc-body{display:block}
+.acc-body-inner{padding-top:16px}
+.dtable{width:100%;border-collapse:collapse;font-size:12.5px}
+.dtable th{text-align:left;font-size:11px;color:var(--subtle);font-weight:600;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--border)}
+.dtable td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.dtable tr:last-child td{border-bottom:none}
+.rmono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--muted-fg);word-break:break-all}
+.sev{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;white-space:nowrap}
+.sev-crit{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.sev-high{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.sev-med{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+.aitag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;white-space:nowrap}
+.tag-forbid{background:var(--red-bg);color:var(--red)}.tag-mask{background:var(--amber-bg);color:var(--amber)}
+.tag-ctrl{background:#fff7ed;color:#ea580c}.tag-allow{background:var(--green-bg);color:var(--green)}
+.rhint{font-size:12.5px;color:var(--muted-fg);line-height:1.6}
+.road{display:flex;flex-direction:column;gap:10px}
+.road-step{display:flex;gap:13px;padding:12px 14px;border:1px solid var(--border);border-radius:10px}
+.road-num{width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.road-t{font-size:13px;font-weight:600;margin-bottom:4px}
+.road-ul{margin:0;padding-left:16px;font-size:12px;color:var(--muted-fg);line-height:1.65}
+
+/* 扫描详情页 */
+.scan-hero{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh);padding:26px;margin-top:20px;display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center}
+.scan-spin{width:120px;height:120px;position:relative;flex-shrink:0}
+.scan-spin svg{transform:rotate(-90deg)}
+.scan-spin-track{stroke:var(--muted)}
+.scan-spin-fill{stroke:var(--brand);stroke-linecap:round;transition:stroke-dashoffset .4s}
+.scan-spin-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.scan-pct{font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--brand)}
+.scan-pct-l{font-size:11px;color:var(--subtle);margin-top:2px}
+.scan-info h2{font-size:18px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+.scan-info .scan-srcs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.scan-steps{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.scan-step-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted-fg)}
+.scan-step-ic{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--muted)}
+.scan-step-ic svg{width:12px;height:12px;fill:none;stroke-width:2.5}
+.scan-step-row.done{color:var(--fg)}
+.scan-step-row.done .scan-step-ic{background:var(--green);}
+.scan-step-row.done .scan-step-ic svg{stroke:#fff}
+.scan-step-row.active .scan-step-ic{background:var(--brand-bg);border:2px solid var(--brand)}
+.scan-step-row.pending .scan-step-ic{background:var(--muted)}
+.scan-live{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.scan-live-c{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);padding:15px 16px}
+.scan-live-n{font-size:23px;font-weight:700;letter-spacing:-.02em}
+.scan-live-l{font-size:11.5px;color:var(--muted-fg);margin-top:2px}
+
+/* 历史报告列表 */
+.hist-list{display:flex;flex-direction:column;gap:11px;margin-top:18px;max-width:760px}
+.hist-row{display:flex;align-items:center;gap:16px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-sm);cursor:pointer;transition:.12s}
+.hist-row:hover{border-color:var(--border-strong);background:#fcfcfc}
+.hist-ring{position:relative;width:52px;height:52px;flex-shrink:0}
+.hist-ring svg{transform:rotate(-90deg)}
+.hist-ring-n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700}
+.hist-meta{flex:1;min-width:0}
+.hist-src{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+.hist-src svg{width:14px;height:14px;stroke:var(--subtle);fill:none;stroke-width:2;flex-shrink:0}
+.hist-sub{font-size:12px;color:var(--subtle);margin-top:2px}
+.hist-stats{display:flex;gap:18px;flex-shrink:0}
+.hist-stat{text-align:center}
+.hist-stat-n{font-size:15px;font-weight:700}
+.hist-stat-l{font-size:10.5px;color:var(--subtle);margin-top:1px}
+.hist-arrow{color:var(--subtle);flex-shrink:0;display:flex}
+.hist-arrow svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.hist-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px}
+.trend-up{background:var(--green-bg);color:var(--green)}
+.trend-flat{background:var(--muted);color:var(--muted-fg)}
+
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.promises{grid-template-columns:1fr 1fr}.gov-layout,.kbgrid,.checkup-grid,.kb-two,.kbd-layout{grid-template-columns:1fr}.kb-rail{flex-direction:row;flex-wrap:wrap;position:static}.ring-card,.rep-verdict{grid-template-columns:1fr;text-align:center;justify-items:center}.rep-kpis{grid-template-columns:1fr 1fr}.rep-alarms{grid-template-columns:1fr}.set-grid{grid-template-columns:1fr}.hist-stats{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side">
+    <div class="side-brand"><div class="bmark">E</div><div><div class="bname">企业数据上 AI</div><div class="bsub">深圳沃德外贸</div></div></div>
+
+    <div class="role-switch">
+      <label>演示视角切换</label>
+      <select id="role" onchange="switchRole()">
+        <option value="admin">管理员（能治理、授权）</option>
+        <option value="staff">普通员工（只用问答）</option>
+      </select>
+    </div>
+
+    <div class="nav-label">概览</div>
+    <button class="nav-item" data-nav="flywheel" onclick="go('flywheel')"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 3v6h6"/><circle cx="12" cy="12" r="3"/></svg>治理飞轮</button>
+    <button class="nav-item admin-only" data-nav="checkup" onclick="go('checkup')"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>数据体检<span class="nav-badge red">17</span></button>
+
+    <div class="nav-label">工作区</div>
+    <button class="nav-item active" data-nav="kb" onclick="go('kb')"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>知识库</button>
+    <button class="nav-item" data-nav="qa" onclick="go('qa')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>AI 问答检索</button>
+    <button class="nav-item admin-only" data-nav="workbench" onclick="go('workbench')"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>治理工作台<span class="nav-badge">3</span></button>
+    <button class="nav-item admin-only" data-nav="authorize" onclick="go('authorize')"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>知识库授权</button>
+
+    <div class="side-foot">
+      <div class="poweredby">Powered by 企业数据上 AI</div>
+      <div class="userfoot"><div class="avatar" id="uava">周</div><div class="who" id="uname">周颜<small id="urole">管理员</small></div></div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ============ 知识库总览 ============ -->
+    <section class="page on" id="page-kb">
+      <div class="page-head">
+        <div>
+          <div class="crumb">工作区 / 知识库</div>
+          <h1>知识库</h1>
+          <p id="kb-sub">你有权访问的知识库。看得见，就代表你有权读。点卡片查看文档，点卡片上的图标直接配置。</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="view-toggle">
+            <button class="vt-btn on" id="vt-card" title="卡片视图" onclick="kbView('card')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+            <button class="vt-btn" id="vt-list" title="列表视图" onclick="kbView('list')"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+          </div>
+          <button class="btn btn-primary admin-only" onclick="EAItoast('（Demo）新建知识库')" title="新建知识库" style="width:36px;padding:0;justify-content:center"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div id="kb-overview"></div>
+    </section>
+
+    <!-- ============ 知识库内文档 ============ -->
+    <section class="page" id="page-kbdocs">
+      <div class="kbd-layout">
+        <!-- 左：知识库图标导航（便于切换，不必返回概览） -->
+        <div class="kb-rail" id="kbd-rail"></div>
+
+        <!-- 右：返回 + 头部 + 文档 -->
+        <div>
+          <div class="page-head">
+            <div style="display:flex;align-items:flex-start;gap:12px;min-width:0">
+              <button class="back-btn" title="返回知识库概览" onclick="go('kb')"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+              <div style="min-width:0">
+                <div class="crumb"><a onclick="go('kb')">知识库</a> / <span id="kbd-name">销售知识库</span></div>
+                <h1 id="kbd-title">销售知识库</h1>
+                <p id="kbd-sub"></p>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px" class="admin-only">
+              <button class="btn" title="基本信息" onclick="openKBSet('info')" style="width:36px;padding:0;justify-content:center"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>
+              <button class="btn" title="体检周期" onclick="openKBSet('cycle')" style="width:36px;padding:0;justify-content:center"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6"/><path d="M12 7v5l3 3"/></svg></button>
+              <button class="btn" title="权限管理" onclick="openKBSet('perm')" style="width:36px;padding:0;justify-content:center"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+              <button class="btn" title="上传入库" onclick="EAItoast('（Demo）上传入库')" style="width:36px;padding:0;justify-content:center"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+            </div>
+          </div>
+          <div class="toolbar">
+            <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input placeholder="搜索文档…"></div>
+            <button class="chip on">全部</button>
+            <button class="chip"><span class="chip-dot bd-conf"></span>机密</button>
+            <button class="chip"><span class="chip-dot bd-int"></span>内部</button>
+          </div>
+          <div class="tbl" id="kbdocs-tbl"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 治理飞轮 ============ -->
+    <section class="page" id="page-flywheel">
+      <div class="page-head"><div><div class="crumb">概览 / 治理飞轮</div><h1>治理飞轮</h1>
+        <p>你的数据从"裸奔"到"AI 可安全使用"走了多远。核心看一件事：AI 现在做到了几个"问不出"。</p></div></div>
+
+      <div class="hero">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <span style="font-size:13px;color:var(--muted-fg);font-weight:500">数据健康分</span>
+          <span style="font-size:12px;color:var(--subtle)">自首次体检以来</span>
+        </div>
+        <div class="score-row">
+          <div class="score-old"><div class="score-num">29</div><div class="score-cap">治理前</div></div>
+          <div class="bar-track"><div class="bar-new"></div></div>
+          <div class="score-new"><div class="score-num">71</div><div class="score-cap">现在</div></div>
+        </div>
+      </div>
+
+      <div class="sec-h">AI 现在做到了几个"问不出"</div>
+      <div class="promises">
+        <div class="promise"><div class="promise-ic"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><h4>问不出敏感信息</h4><p>身份证、银行卡已脱敏</p><div class="promise-stat">✓ 已达成</div></div>
+        <div class="promise"><div class="promise-ic"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><h4>问不出超权限内容</h4><p>按知识库授权过滤</p><div class="promise-stat">✓ 已达成</div></div>
+        <div class="promise"><div class="promise-ic" style="background:var(--amber-bg)"><svg viewBox="0 0 24 24" style="stroke:var(--amber)"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg></div><h4>问不出过期知识</h4><p>380 个过期待清理</p><div class="promise-stat" style="color:var(--amber)">进行中 78%</div></div>
+        <div class="promise"><div class="promise-ic"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><h4>问不出混乱版本</h4><p>多版本已合并</p><div class="promise-stat">✓ 已达成</div></div>
+      </div>
+
+      <div class="card admin-only">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:14px;font-weight:600">还有 3 份文档治理完成，等你批准</div>
+          <div style="font-size:12.5px;color:var(--muted-fg);margin-top:2px">机器已生成方案和预览，批准后才会生效</div></div>
+          <button class="btn btn-brand" onclick="go('workbench')">去治理工作台 →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 数据体检 ============ -->
+    <section class="page" id="page-checkup">
+      <div class="page-head"><div><div class="crumb">概览 / 数据体检</div><h1>数据健康体检</h1>
+        <p>扫一遍你的数据，看哪些含敏感信息、谁能看到、能不能安全交给 AI。本地完成，文件不出公司网络。</p></div>
+        <button class="btn" onclick="openScan()"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>扫描</button>
+      </div>
+
+      <div id="ck-summary">
+      <div class="checkup-grid">
+
+        <!-- 主栏：最近一次体检摘要 -->
+        <div>
+          <div class="ck-source">
+            <span>本次体检数据源</span>
+            <span class="src-tag"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>智能制造资料包 / 共享盘</span>
+            <span class="ck-dot"></span>
+            <span>28 个文件 · 完成于 2026-06-24 19:55</span>
+          </div>
+
+          <div class="ring-card">
+            <div class="ring">
+              <svg width="150" height="150" viewBox="0 0 150 150">
+                <circle cx="75" cy="75" r="63" fill="none" stroke="#f4f4f5" stroke-width="13"/>
+                <circle cx="75" cy="75" r="63" fill="none" stroke="#dc2626" stroke-width="13" stroke-linecap="round" stroke-dasharray="396" stroke-dashoffset="251"/>
+              </svg>
+              <div class="ring-center"><div class="ring-score">37</div><div class="ring-grade">高风险</div></div>
+            </div>
+            <div class="ring-right">
+              <h2>数据风险偏高，建议先整顿再谈 AI 接入</h2>
+              <p>扫描的 28 个文件里，全部 28 个权限过宽（100%），并发现银行卡号、身份证等严重敏感信息。直接接入 AI 等于把这些内容向全员敞开。</p>
+              <div class="ring-stats">
+                <div><div class="ring-stat-n" style="color:var(--red)">13</div><div class="ring-stat-l">高危 · 46%</div></div>
+                <div><div class="ring-stat-n" style="color:var(--red)">9</div><div class="ring-stat-l">禁入 AI · 32%</div></div>
+                <div><div class="ring-stat-n" style="color:var(--green)">6</div><div class="ring-stat-l">可入库 · 21%</div></div>
+              </div>
+              <button class="btn btn-primary" style="margin-top:16px" onclick="showFullReport()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>查看完整报告</button>
+            </div>
+          </div>
+
+          <div class="sec-h">最该收紧的几处</div>
+          <div class="tbl">
+            <div class="tr" style="grid-template-columns:auto 1fr auto;gap:16px;height:auto;padding:16px;align-items:start">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:6px"></div>
+              <div><div style="font-size:14.5px;font-weight:600;margin-bottom:3px">员工花名册裸露身份证、银行卡号</div>
+                <div style="font-size:13px;color:var(--muted-fg)">「员工花名册（绝密-勿外发）.md」同时命中银行卡×8、身份证×4，却位于 others 可读的共享目录。</div></div>
+              <button class="btn btn-brand" style="height:30px;white-space:nowrap" onclick="go('workbench')">去治理</button>
+            </div>
+            <div class="tr" style="grid-template-columns:auto 1fr auto;gap:16px;height:auto;padding:16px;align-items:start">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:6px"></div>
+              <div><div style="font-size:14.5px;font-weight:600;margin-bottom:3px">28 个文件全部权限过宽（100%）</div>
+                <div style="font-size:13px;color:var(--muted-fg)">所有文件都位于 Public/共享目录且 others 可读，等于全员可见。</div></div>
+              <button class="btn btn-brand" style="height:30px;white-space:nowrap" onclick="go('workbench')">去治理</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 侧栏：图标为主，首层只露核心两项 -->
+        <div class="side-panel">
+          <div class="sp-icon" title="所有报告" onclick="go('history')">
+            <svg class="sp-icon-img" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/></svg>
+            <span class="sp-icon-cap">所有报告</span>
+          </div>
+          <div class="sp-icon" title="导出报告" onclick="EAItoast('（Demo）导出 PDF 报告')">
+            <svg class="sp-icon-img" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg>
+            <span class="sp-icon-cap">导出</span>
+          </div>
+        </div>
+
+      </div>
+      </div><!-- /ck-summary -->
+
+      <!-- 原位展开的完整报告（不跳页，收起恢复摘要） -->
+      <div id="ck-fullreport" style="display:none">
+        <div class="page-head" style="margin-bottom:0"><div>
+          <h1 style="font-size:18px">完整体检报告</h1>
+          <p style="font-size:13px;color:var(--muted-fg);margin-top:2px">智能制造资料包 · 编号 drc-20260624-195543 · 2026-06-24 19:55</p></div>
+          <button class="btn" onclick="hideFullReport()"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>收起报告</button>
+        </div>
+        <div id="ck-report-mount"></div>
+      </div>
+
+    </section>
+
+    <!-- ============ 扫描详情 ============ -->
+    <section class="page" id="page-scandetail">
+      <div class="page-head"><div>
+        <div class="crumb"><a onclick="go('checkup')">数据体检</a> / 扫描详情</div>
+        <h1>正在扫描</h1>
+        <p>只读扫描进行中，平台不会上传或移动任何文件，原始数据始终留在本地。</p></div>
+        <button class="btn" onclick="go('checkup')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>返回</button>
+      </div>
+
+      <div class="scan-hero">
+        <div class="scan-spin">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle class="scan-spin-track" cx="60" cy="60" r="50" fill="none" stroke-width="10"/>
+            <circle class="scan-spin-fill" id="scanFill" cx="60" cy="60" r="50" fill="none" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="314"/>
+          </svg>
+          <div class="scan-spin-c"><div class="scan-pct" id="scanPct">0%</div><div class="scan-pct-l" id="scanPctL">扫描中</div></div>
+        </div>
+        <div class="scan-info">
+          <h2 id="scanTitle">正在扫描数据源…</h2>
+          <div class="scan-srcs" id="scanSrcs"></div>
+          <div class="scan-steps">
+            <div class="scan-step-row done" id="sstep0"><div class="scan-step-ic"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>连接数据源</div>
+            <div class="scan-step-row active" id="sstep1"><div class="scan-step-ic"><svg viewBox="0 0 24 24"></svg></div>遍历文件，提取元数据</div>
+            <div class="scan-step-row pending" id="sstep2"><div class="scan-step-ic"><svg viewBox="0 0 24 24"></svg></div>识别敏感信息与权限风险</div>
+            <div class="scan-step-row pending" id="sstep3"><div class="scan-step-ic"><svg viewBox="0 0 24 24"></svg></div>生成体检报告</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scan-live">
+        <div class="scan-live-c"><div class="scan-live-n" id="slFiles">0</div><div class="scan-live-l">已扫描文件</div></div>
+        <div class="scan-live-c"><div class="scan-live-n" id="slSens" style="color:var(--red)">0</div><div class="scan-live-l">命中敏感信息</div></div>
+        <div class="scan-live-c"><div class="scan-live-n" id="slPerm" style="color:var(--amber)">0</div><div class="scan-live-l">权限过宽</div></div>
+        <div class="scan-live-c"><div class="scan-live-n" id="slDur">0s</div><div class="scan-live-l">耗时</div></div>
+      </div>
+
+      <div id="scanDoneBar" style="display:none">
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between;background:var(--green-bg);border-color:var(--green-bd)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:36px;height:36px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" style="width:19px;height:19px;stroke:#fff;fill:none;stroke-width:2.5"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <div><div style="font-size:14px;font-weight:600">扫描完成，已生成体检报告</div>
+            <div style="font-size:12.5px;color:var(--muted-fg);margin-top:1px">综合健康分 37 · 高风险 · 发现 13 个高危项</div></div>
+          </div>
+          <button class="btn btn-primary" onclick="go('checkup')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>查看体检结果</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 完整体检报告（手风琴下钻） ============ -->
+    <section class="page" id="page-report">
+      <div class="page-head"><div>
+        <div class="crumb"><a onclick="go('checkup')">数据体检</a> / <a onclick="go('history')">历史报告</a> / 完整报告</div>
+        <h1>数据健康体检报告</h1></div>
+        <button class="btn"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg>导出 PDF</button>
+      </div>
+
+      <div class="rep-wrap">
+        <div class="ck-source" style="margin:14px 0">
+          <span>本次体检数据源</span>
+          <span class="src-tag"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>智能制造资料包 / 共享盘</span>
+          <span class="ck-dot"></span><span>报告编号 drc-20260624-195543</span>
+          <span class="ck-dot"></span><span>2026-06-24 19:55</span>
+        </div>
+
+        <!-- 第一层：醒目结论 -->
+        <div class="rep-verdict">
+          <div class="ring">
+            <svg width="150" height="150" viewBox="0 0 150 150">
+              <circle cx="75" cy="75" r="63" fill="none" stroke="#f4f4f5" stroke-width="13"/>
+              <circle cx="75" cy="75" r="63" fill="none" stroke="#dc2626" stroke-width="13" stroke-linecap="round" stroke-dasharray="396" stroke-dashoffset="251"/>
+            </svg>
+            <div class="ring-center"><div class="ring-score">37</div><div class="ring-grade">高风险</div></div>
+          </div>
+          <div class="ring-right">
+            <h2 style="font-size:19px">数据风险偏高，建议先整顿再谈 AI 接入</h2>
+            <p>扫描的 28 个文件里，<b style="color:var(--red)">全部 28 个权限过宽（100%）</b>，并发现银行卡号、身份证等严重敏感信息。现在直接接入 AI，等于把这些内容向全员甚至外部敞开。</p>
+          </div>
+        </div>
+
+        <div class="rep-kpis">
+          <div class="rep-kpi"><div class="rep-kpi-n">28</div><div class="rep-kpi-l">扫描文件 · 100%</div></div>
+          <div class="rep-kpi"><div class="rep-kpi-n" style="color:var(--red)">13</div><div class="rep-kpi-l">高危/严重 · 46%</div></div>
+          <div class="rep-kpi"><div class="rep-kpi-n" style="color:var(--red)">9</div><div class="rep-kpi-l">禁止进入 AI · 32%</div></div>
+          <div class="rep-kpi"><div class="rep-kpi-n" style="color:var(--green)">6</div><div class="rep-kpi-l">可直接入库 · 21%</div></div>
+        </div>
+
+        <div class="rep-alarms">
+          <div class="rep-alarm"><svg viewBox="0 0 24 24"><path d="M12 2 2 21h20L12 2z"/><path d="M12 9v4M12 17h.01"/></svg>
+            <div><div class="rep-alarm-t">28 个文件全部权限过宽（100%）</div><div class="rep-alarm-p">都位于共享/Public 目录且 others 可读，等于全员可见。</div></div></div>
+          <div class="rep-alarm"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div><div class="rep-alarm-t">银行卡号、身份证裸露</div><div class="rep-alarm-p">银行卡号命中 12 次（涉 4 文件）、身份证 5 次（涉 2 文件），均属 critical。</div></div></div>
+        </div>
+
+        <div class="sec-h">展开查看详情（按风险高低排序）</div>
+
+        <div class="acc">
+          <div class="acc-head" onclick="toggleAcc(this)">
+            <div class="acc-ic ai-red"><svg viewBox="0 0 24 24"><path d="M12 2 2 21h20L12 2z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+            <div class="acc-meta"><div class="acc-title">敏感信息风险</div><div class="acc-sub">6 类敏感信息命中，银行卡号 / 身份证最严重</div></div>
+            <div class="acc-right"><span class="acc-stat as-red">6 类 · 命中 72 次</span><svg class="acc-arrow" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="acc-body"><div class="acc-body-inner">
+            <table class="dtable">
+              <tr><th>类型</th><th>严重度</th><th>AI 标签</th><th>命中</th><th>文件</th></tr>
+              <tr><td>银行卡 / 卡号</td><td><span class="sev sev-crit">critical</span></td><td><span class="aitag tag-forbid">禁止进入 AI</span></td><td>12</td><td>4</td></tr>
+              <tr><td>中国大陆身份证号</td><td><span class="sev sev-crit">critical</span></td><td><span class="aitag tag-forbid">禁止进入 AI</span></td><td>5</td><td>2</td></tr>
+              <tr><td>中国大陆手机号</td><td><span class="sev sev-high">high</span></td><td><span class="aitag tag-mask">脱敏后进入</span></td><td>13</td><td>5</td></tr>
+              <tr><td>薪资 / 人事</td><td><span class="sev sev-high">high</span></td><td><span class="aitag tag-ctrl">仅内部受控</span></td><td>5</td><td>4</td></tr>
+              <tr><td>合同 / 客户 / 财务</td><td><span class="sev sev-med">medium</span></td><td><span class="aitag tag-ctrl">仅内部受控</span></td><td>24</td><td>11</td></tr>
+              <tr><td>统一社会信用代码</td><td><span class="sev sev-med">medium</span></td><td><span class="aitag tag-ctrl">仅内部受控</span></td><td>13</td><td>4</td></tr>
+            </table>
+            <p class="rhint" style="margin-top:12px"><b>最危险的文件：</b>员工花名册（绝密-勿外发）.md —— 同时命中银行卡×8、身份证×4、手机号×4、信用代码×8。</p>
+          </div></div>
+        </div>
+
+        <div class="acc">
+          <div class="acc-head" onclick="toggleAcc(this)">
+            <div class="acc-ic ai-red"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg></div>
+            <div class="acc-meta"><div class="acc-title">不适合进入 AI 的资料</div><div class="acc-sub">这些文件治理前绝不能入库，否则 AI 会泄露</div></div>
+            <div class="acc-right"><span class="acc-stat as-red">32% · 9/28</span><svg class="acc-arrow" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="acc-body"><div class="acc-body-inner">
+            <table class="dtable">
+              <tr><th>文件</th><th>原因</th></tr>
+              <tr><td class="rmono">人事行政/员工花名册（绝密-勿外发）.md</td><td>宽权限目录 · others 可读 · 含手机号</td></tr>
+              <tr><td class="rmono">人事行政/报销单-李工差旅.md</td><td>宽权限目录 · others 可读 · 疑似银行卡号</td></tr>
+              <tr><td class="rmono">市场部/客户名单2024.md</td><td>宽权限目录 · others 可读 · 含手机号</td></tr>
+              <tr><td class="rmono">市场部/客户拜访记录.md</td><td>宽权限目录 · others 可读 · 含手机号</td></tr>
+              <tr><td class="rmono">市场部/销售合同-广东某汽配（已盖章）.md</td><td>宽权限目录 · others 可读 · 疑似银行卡号</td></tr>
+              <tr><td class="rmono">市场部/报价单-宁德某动力DX3000产线.md</td><td>宽权限目录 · others 可读 · 含手机号</td></tr>
+              <tr><td class="rmono">制度规范/ISO9001质量手册节选.md</td><td>宽权限目录 · others 可读 · 财务关键词</td></tr>
+              <tr><td class="rmono">研发部/DX3000产线技术方案_真的最终版v3（勿动）.md</td><td>宽权限目录 · others 可读 · 合同关键词</td></tr>
+              <tr><td class="rmono">资料包说明.md</td><td>others 可读 · 含大量业务敏感关键词</td></tr>
+            </table>
+          </div></div>
+        </div>
+
+        <div class="acc">
+          <div class="acc-head" onclick="toggleAcc(this)">
+            <div class="acc-ic ai-amber"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+            <div class="acc-meta"><div class="acc-title">过期知识风险</div><div class="acc-sub">超 180 天未修改的资料，AI 会引用陈旧内容</div></div>
+            <div class="acc-right"><span class="acc-stat as-green">0% · 0/28</span><svg class="acc-arrow" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="acc-body"><div class="acc-body-inner">
+            <p class="rhint">本次扫描<b>未发现超过 180 天未修改的文件（0/28，0%）</b>，资料新鲜度良好。</p>
+            <p class="rhint" style="margin-top:10px"><b>但要注意：</b>文件"未修改"不等于知识"未过期"。知识库上线后，还应结合<b>访问记录</b>识别真正过期的知识——长期零访问的内容往往已失效。这正是 EAI 可持续治理飞轮的一环：数据会随业务变旧，需周期性复检。</p>
+          </div></div>
+        </div>
+
+        <div class="acc">
+          <div class="acc-head" onclick="toggleAcc(this)">
+            <div class="acc-ic ai-amber"><svg viewBox="0 0 24 24"><path d="M20.6 7.3 13.4 14.5a2 2 0 0 1-2.8 0L3.4 7.3"/><path d="M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+            <div class="acc-meta"><div class="acc-title">命名规范问题</div><div class="acc-sub">「最终版/旧版」等混乱版本词，AI 会引用错版本</div></div>
+            <div class="acc-right"><span class="acc-stat as-amber">14% · 4/28</span><svg class="acc-arrow" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="acc-body"><div class="acc-body-inner">
+            <table class="dtable">
+              <tr><th>文件</th><th>命中词</th></tr>
+              <tr><td class="rmono">研发部/DX3000产线技术方案_真的最终版v3（勿动）.md</td><td>最终版、终版</td></tr>
+              <tr><td class="rmono">研发部/鼎信DX3000智能产线技术方案最终版-改0612.md</td><td>最终版、终版</td></tr>
+              <tr><td class="rmono">研发部/鼎信DX3000智能产线技术方案最终版.md</td><td>最终版、终版</td></tr>
+              <tr><td class="rmono">培训资料/设备安全操作培训（2022旧版）.md</td><td>旧版</td></tr>
+            </table>
+            <p class="rhint" style="margin-top:12px"><b>推荐命名：</b>部门-团队-项目-用途-版本，如「研发部-产线组-DX3000-技术方案-v3.md」；版本用 v1/v2/v3。</p>
+          </div></div>
+        </div>
+
+        <div class="acc">
+          <div class="acc-head" onclick="toggleAcc(this)">
+            <div class="acc-ic ai-green"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <div class="acc-meta"><div class="acc-title">可优先入库的资料</div><div class="acc-sub">低敏、可直接试点 AI 问答的优质知识</div></div>
+            <div class="acc-right"><span class="acc-stat as-green">21% · 6/28</span><svg class="acc-arrow" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="acc-body"><div class="acc-body-inner">
+            <table class="dtable">
+              <tr><th>文件</th><th>建议场景</th></tr>
+              <tr><td class="rmono">产品资料/DX3000安装调试指南.md</td><td>操作流程助手（运维/客服 SOP）</td></tr>
+              <tr><td class="rmono">产品资料/DX3000操作手册.md</td><td>操作流程助手</td></tr>
+              <tr><td class="rmono">产品资料/DX3000维护保养手册.md</td><td>操作流程助手</td></tr>
+              <tr><td class="rmono">产品资料/产品规格书-DX3000智能装配产线.md</td><td>产品知识助手（售前/客服）</td></tr>
+              <tr><td class="rmono">产品资料/常见故障排查手册.md</td><td>操作流程助手</td></tr>
+              <tr><td class="rmono">培训资料/设备安全操作培训（2022旧版）.md</td><td>通用知识检索</td></tr>
+            </table>
+            <p class="rhint" style="margin-top:12px">可直接进入 AI 的低敏资料仅 <b>6/28（21%）</b>，可用知识储备不足。建议按下方「知识沉淀缺口」补充与脱敏。</p>
+          </div></div>
+        </div>
+
+        <div class="acc">
+          <div class="acc-head" onclick="toggleAcc(this)">
+            <div class="acc-ic ai-blue"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <div class="acc-meta"><div class="acc-title">知识沉淀缺口</div><div class="acc-sub">可用知识储备不足，且缺最高频的 FAQ 类型</div></div>
+            <div class="acc-right"><span class="acc-stat as-amber">仅 21% 可用</span><svg class="acc-arrow" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="acc-body"><div class="acc-body-inner">
+            <table class="dtable">
+              <tr><th>缺口</th><th>现状</th><th>影响</th></tr>
+              <tr><td>FAQ / 问答类知识</td><td><span class="aitag tag-forbid">完全缺失 0 份</span></td><td>AI 问答最高频的类型，缺失直接拉低命中率</td></tr>
+              <tr><td>可直接入库低敏资料</td><td><span class="aitag tag-mask">仅 6/28（21%）</span></td><td>高质量可用知识储备不足</td></tr>
+            </table>
+            <p class="rhint" style="margin-top:12px"><b>建议优先补齐：</b>制度、流程、FAQ、方案四类。其中 FAQ 应最优先——它直接决定 AI 能不能答上来。沉淀知识不是为了存档，是为了让 AI 真正可用。</p>
+          </div></div>
+        </div>
+
+        <div class="acc">
+          <div class="acc-head" onclick="toggleAcc(this)">
+            <div class="acc-ic ai-brand"><svg viewBox="0 0 24 24"><path d="M9 6 3 9v12l6-3 6 3 6-3V6l-6 3-6-3z"/><path d="M9 6v12M15 9v12"/></svg></div>
+            <div class="acc-meta"><div class="acc-title">30 天整改路线图</div><div class="acc-sub">从止血到 AI 试点，分四阶段推进</div></div>
+            <div class="acc-right"><span class="acc-stat as-gray">4 阶段</span><svg class="acc-arrow" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="acc-body"><div class="acc-body-inner"><div class="road">
+            <div class="road-step"><div class="road-num">1</div><div><div class="road-t">第 1-3 天 · 止血与边界确认</div><ul class="road-ul"><li>隔离 9 份「禁止进入 AI」的高敏资料</li><li>收敛 28 个权限过宽文件的访问范围</li></ul></div></div>
+            <div class="road-step"><div class="road-num">2</div><div><div class="road-t">第 4-10 天 · 资产治理与命名规范</div><ul class="road-ul"><li>整改 4 个含混乱版本词的文件名</li><li>推行统一命名规范</li></ul></div></div>
+            <div class="road-step"><div class="road-num">3</div><div><div class="road-t">第 11-20 天 · 备份验证与知识补齐</div><ul class="road-ul"><li>落实 3-2-1 备份并抽样恢复演练</li><li>补齐缺失的 FAQ/制度/流程知识</li></ul></div></div>
+            <div class="road-step"><div class="road-num">4</div><div><div class="road-t">第 21-30 天 · AI 接入试点</div><ul class="road-ul"><li>导入 6 份优先资料，按场景试点</li><li>建立脱敏、权限过滤、引用溯源、问答日志四道门</li></ul></div></div>
+          </div></div></div>
+        </div>
+
+        <div class="acc">
+          <div class="acc-head" onclick="toggleAcc(this)">
+            <div class="acc-ic ai-blue"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"/></svg></div>
+            <div class="acc-meta"><div class="acc-title">备份恢复评估</div><div class="acc-sub">未发现备份线索，需访谈确认</div></div>
+            <div class="acc-right"><span class="acc-stat as-amber">高风险</span><svg class="acc-arrow" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="acc-body"><div class="acc-body-inner">
+            <p class="rhint">未发现明显备份/快照/副本线索，需访谈确认真实备份策略。建议抽取 3 个关键文件做恢复演练。本地自有数据落实 3-2-1（3 副本 / 2 介质 / 1 异地），云端托管数据仅留缓存，恢复演练每季度一次。</p>
+          </div></div>
+        </div>
+
+        <p class="rhint" style="margin-top:20px;border-top:1px dashed var(--border);padding-top:16px;font-size:11.5px;color:var(--subtle)">· 本报告基于授权目录只读扫描和启发式规则，不等同于完整安全审计或法律意见。· 本次扫描在本地完成，文件内容不出公司网络。</p>
+      </div>
+    </section>
+
+    <!-- ============ 所有报告 ============ -->
+    <section class="page" id="page-history">
+      <div class="page-head"><div>
+        <div class="crumb"><a onclick="go('checkup')">数据体检</a> / 所有报告</div>
+        <h1>所有报告</h1>
+        <p>每一次体检都会存档。对比历次健康分，能看到数据治理的进展。点任意一条展开完整报告，收起恢复列表。</p></div>
+        <button class="btn" onclick="openScan()"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>发起新体检</button>
+      </div>
+
+      <!-- 列表模式 -->
+      <div class="hist-list" id="allreports-list">
+        <div class="hist-row" onclick="expandReportRow('drc-20260624-195543','智能制造资料包 / 共享盘','2026-06-24 19:55',37)">
+          <div class="hist-ring">
+            <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r="21" fill="none" stroke="#f4f4f5" stroke-width="6"/><circle cx="26" cy="26" r="21" fill="none" stroke="#dc2626" stroke-width="6" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="83"/></svg>
+            <div class="hist-ring-n" style="color:var(--red)">37</div>
+          </div>
+          <div class="hist-meta">
+            <div class="hist-src"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>智能制造资料包 / 共享盘 <span class="hist-trend trend-flat">最新</span></div>
+            <div class="hist-sub">2026-06-24 19:55 · 编号 drc-20260624-195543 · 28 个文件</div>
+          </div>
+          <div class="hist-stats">
+            <div class="hist-stat"><div class="hist-stat-n" style="color:var(--red)">13</div><div class="hist-stat-l">高危</div></div>
+            <div class="hist-stat"><div class="hist-stat-n" style="color:var(--red)">9</div><div class="hist-stat-l">禁入 AI</div></div>
+            <div class="hist-stat"><div class="hist-stat-n" style="color:var(--green)">6</div><div class="hist-stat-l">可入库</div></div>
+          </div>
+          <div class="hist-arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+
+        <div class="hist-row" onclick="expandReportRow('drc-20260610-102100','智能制造资料包 / 共享盘','2026-06-10 10:21',55)">
+          <div class="hist-ring">
+            <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r="21" fill="none" stroke="#f4f4f5" stroke-width="6"/><circle cx="26" cy="26" r="21" fill="none" stroke="#d97706" stroke-width="6" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="59"/></svg>
+            <div class="hist-ring-n" style="color:var(--amber)">55</div>
+          </div>
+          <div class="hist-meta">
+            <div class="hist-src"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>智能制造资料包 / 共享盘 <span class="hist-trend trend-up">↑ 治理后 +18</span></div>
+            <div class="hist-sub">2026-06-10 10:21 · 编号 drc-20260610-102100 · 28 个文件</div>
+          </div>
+          <div class="hist-stats">
+            <div class="hist-stat"><div class="hist-stat-n" style="color:var(--amber)">6</div><div class="hist-stat-l">高危</div></div>
+            <div class="hist-stat"><div class="hist-stat-n" style="color:var(--amber)">4</div><div class="hist-stat-l">禁入 AI</div></div>
+            <div class="hist-stat"><div class="hist-stat-n" style="color:var(--green)">15</div><div class="hist-stat-l">可入库</div></div>
+          </div>
+          <div class="hist-arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+
+        <div class="hist-row" onclick="expandReportRow('drc-20260608-164000','销售知识库','2026-06-08 16:40',70)">
+          <div class="hist-ring">
+            <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r="21" fill="none" stroke="#f4f4f5" stroke-width="6"/><circle cx="26" cy="26" r="21" fill="none" stroke="#16a34a" stroke-width="6" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="40"/></svg>
+            <div class="hist-ring-n" style="color:var(--green)">70</div>
+          </div>
+          <div class="hist-meta">
+            <div class="hist-src"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>销售知识库 <span class="hist-trend trend-up">↑ 良好</span></div>
+            <div class="hist-sub">2026-06-08 16:40 · 编号 drc-20260608-164000 · 12 个文件</div>
+          </div>
+          <div class="hist-stats">
+            <div class="hist-stat"><div class="hist-stat-n" style="color:var(--green)">1</div><div class="hist-stat-l">高危</div></div>
+            <div class="hist-stat"><div class="hist-stat-n" style="color:var(--green)">0</div><div class="hist-stat-l">禁入 AI</div></div>
+            <div class="hist-stat"><div class="hist-stat-n" style="color:var(--green)">10</div><div class="hist-stat-l">可入库</div></div>
+          </div>
+          <div class="hist-arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- 详情模式（原位展开，收起恢复列表） -->
+      <div id="allreports-detail" style="display:none">
+        <div class="page-head" style="margin-bottom:0"><div>
+          <h1 style="font-size:18px" id="ard-title">完整体检报告</h1>
+          <p style="font-size:13px;color:var(--muted-fg);margin-top:2px" id="ard-sub"></p></div>
+          <button class="btn" onclick="collapseReportRow()"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>收起，返回列表</button>
+        </div>
+        <div id="ard-mount"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-workbench">
+      <div class="page-head"><div><div class="crumb">工作区 / 治理工作台</div><h1>治理工作台</h1>
+        <p>机器已分析并生成治理方案。下面是<b>将要执行的改动预览</b>——你批准后才会真正生效，未批准的不会发生。</p></div></div>
+      <div class="gov-layout">
+        <div>
+          <div class="sec-h">待你批准（3）</div>
+          <div class="plan sel"><div class="plan-name">2026客户总表.xlsx</div><div class="plan-id">计划 #PL-2041</div>
+            <div class="plan-tags"><span class="ttag risk">敏感脱敏</span><span class="ttag">归入销售库</span></div></div>
+          <div class="plan"><div class="plan-name">采购合同_最终版.docx</div><div class="plan-id">计划 #PL-2042 · 6 版本</div>
+            <div class="plan-tags"><span class="ttag">多版本合并</span></div></div>
+          <div class="plan"><div class="plan-name">deploy.sh</div><div class="plan-id">计划 #PL-2043</div>
+            <div class="plan-tags"><span class="ttag risk">密钥隔离</span></div></div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:0">
+            <div class="preview-banner">
+              <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              <div><b>以下是将要执行的改动，尚未生效</b><p>你批准哪类，机器才执行哪类。原文件在你批准前不会被改动。</p></div>
+            </div>
+            <div class="expert">
+              <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 3 2 5 2 7h10c0-2 2-4 2-7a7 7 0 0 0-7-7z"/><path d="M9 21h6"/></svg>
+              <div><b>外贸行业治理专家建议</b><p>这是含客户联系信息的销售类文档。按外贸行业惯例，客户名单应脱敏后入库，并归入仅销售团队可见的知识库，避免泄露给一线以外人员。</p></div>
+            </div>
+
+            <div class="tgroup">
+              <div class="tg-head"><div class="tg-check on" onclick="toggleG(this)"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+                <div class="tg-name">敏感信息脱敏</div><span class="tg-badge">需你批准</span></div>
+              <div class="diff"><div class="diff-before">440301199008120031</div>
+                <div class="diff-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                <div class="diff-after">4403**********0031</div></div>
+            </div>
+
+            <div class="tgroup">
+              <div class="tg-head"><div class="tg-check on" onclick="toggleG(this)"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+                <div class="tg-name">归入「销售知识库」</div><span class="tg-badge">需你批准</span></div>
+              <div class="diff"><div class="diff-before">当前：未归库 · 全员可见</div>
+                <div class="diff-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                <div class="diff-after">销售知识库 · 仅 12 人可读</div></div>
+            </div>
+
+            <div class="tgroup">
+              <div class="tg-head"><div class="tg-check on" onclick="toggleG(this)"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+                <div class="tg-name">补全业务标签</div><span class="tg-badge auto">低风险 · 已自动</span></div>
+              <div class="diff"><div class="diff-before">无标签</div>
+                <div class="diff-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                <div class="diff-after">客户 / 名单 / 2026</div></div>
+            </div>
+
+            <div class="gov-foot">
+              <button class="btn" style="color:var(--muted-fg)" onclick="EAItoast('已退回，文档保持原状')">全部退回</button>
+              <div class="info">已选 <b id="gsel">3</b> 类改动</div>
+              <button class="btn btn-primary" onclick="EAItoast('已批准所选改动，开始执行')">批准所选并执行</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 知识库授权（整库授权） ============ -->
+    <section class="page" id="page-authorize">
+      <div class="page-head"><div><div class="crumb">工作区 / 知识库授权</div><h1>知识库授权</h1>
+        <p>以知识库为单位授权，不必一份份文档设权限。授权给谁，谁就能读到这个库里的全部文档。右下角实时显示授权后有多少人能访问。</p></div></div>
+
+      <div class="auth-kb">
+        <div class="kbicon kbi-1"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <div><div style="font-size:15px;font-weight:600">销售知识库</div><div style="font-size:12px;color:var(--subtle)">12 份文档 · 含客户名单（已脱敏）</div></div>
+      </div>
+
+      <div class="sec-h">授权给（部门 / 成员 / 项目）</div>
+      <div class="grant-row"><div class="grant-l"><div class="grant-av">销</div><div><div class="grant-name">销售部</div><div class="grant-sub">部门 · 8 人</div></div></div><div class="toggle" onclick="toggleGrant(this)"></div></div>
+      <div class="grant-row"><div class="grant-l"><div class="grant-av">李</div><div><div class="grant-name">李明 · 销售总监</div><div class="grant-sub">成员</div></div></div><div class="toggle" onclick="toggleGrant(this)"></div></div>
+      <div class="grant-row"><div class="grant-l"><div class="grant-av" style="background:var(--brand-bg);color:var(--brand)">南</div><div><div class="grant-name">南沙基建项目组</div><div class="grant-sub">虚拟项目 · 跨部门 5 人</div></div></div><div class="toggle off" onclick="toggleGrant(this)"></div></div>
+      <div class="grant-row"><div class="grant-l"><div class="grant-av">财</div><div><div class="grant-name">财务部</div><div class="grant-sub">部门 · 3 人</div></div></div><div class="toggle off" onclick="toggleGrant(this)"></div></div>
+
+      <div class="preview-who">
+        <div class="preview-who-num" id="auth-count">12</div>
+        <div class="preview-who-lab">人将能在 AI 问答中访问到这个知识库的全部文档</div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn">取消</button>
+        <button class="btn btn-brand" onclick="EAItoast('授权已保存，库内文档对这些人 AI 可检索')">保存授权</button>
+      </div>
+    </section>
+
+    <!-- ============ AI 问答（四个问不出） ============ -->
+    <section class="page" id="page-qa">
+      <div class="page-head"><div><div class="crumb">工作区 / AI 问答检索</div><h1>AI 问答检索</h1>
+        <p id="qa-sub">基于你有权访问的知识库回答。问不出敏感信息、问不出超权限内容、问不出过期或错版本——试试下面的问题。</p></div></div>
+      <div class="qa-suggest">
+        <button class="qa-sug" onclick="ask('sensitive')">客户张伟的银行卡号是多少？</button>
+        <button class="qa-sug" onclick="ask('perm')">财务部的工资表里，最高工资是多少？</button>
+        <button class="qa-sug" onclick="ask('version')">采购合同的最终金额是多少？</button>
+        <button class="qa-sug" onclick="ask('normal')">销售手册里的报价流程是什么？</button>
+      </div>
+      <div class="chat" id="chat">
+        <div class="bubble ai">你好，我会基于你有权访问的知识库回答，并附上来源。点上面的问题试试四个"问不出"。</div>
+      </div>
+      <div class="qa-input"><input id="qa-in" placeholder="输入你的问题…" onkeydown="if(event.key==='Enter')askFree()"><button class="btn btn-primary" onclick="askFree()">提问</button></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- drawer -->
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="dr-head"><button class="dr-close" onclick="closeDrawer()">✕</button>
+    <div style="display:flex;align-items:center;gap:12px;margin-right:32px">
+      <div class="ficon fi-xls">XLS</div>
+      <div><div style="font-size:15px;font-weight:600">2026客户总表.xlsx</div><div style="font-size:12px;color:var(--subtle)">销售知识库</div></div></div>
+  </div>
+  <div class="dr-body">
+    <div style="font-size:11.5px;color:var(--subtle);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:12px">治理历程</div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">6/27 09:12</div><div class="tl-title">采集入库</div><div class="tl-desc">从共享盘同步，生成草稿</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">6/27 14:32</div><div class="tl-title">体检发现敏感</div><div class="tl-desc">328 条身份证、56 条银行卡号</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">6/27 14:33</div><div class="tl-title">生成治理计划 #PL-2041</div><div class="tl-desc">脱敏 + 归入销售库</div></div>
+    <div class="tl-item"><div class="tl-dot cur"></div><div class="tl-time">现在</div><div class="tl-title">等你批准</div><div class="tl-desc">预览就绪，批准后生效</div>
+      <button class="btn btn-brand" style="height:30px;margin-top:8px" onclick="closeDrawer();go('workbench')">去批准 →</button></div>
+    <div class="tl-item"><div class="tl-dot pending"></div><div class="tl-time">待进行</div><div class="tl-title" style="color:var(--subtle)">归库生效</div><div class="tl-desc">归入销售库后，对授权成员 AI 可检索</div></div>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<!-- 知识库设置抽屉 -->
+<div class="scrim" id="kbset-scrim" onclick="closeKBSet()"></div>
+<aside class="drawer" id="kbset-drawer">
+  <div class="dr-head"><button class="dr-close" onclick="closeKBSet()">✕</button>
+    <div style="font-size:15px;font-weight:600">知识库设置</div>
+    <div style="font-size:12px;color:var(--subtle)" id="kbset-subtitle">配置基本信息、体检周期与权限</div>
+  </div>
+  <div class="dr-body">
+    <div class="kbset-hero">
+      <div class="kbset-hero-ic" id="kbset-hero-ic"></div>
+      <div><div style="font-size:14px;font-weight:600" id="kbset-hero-name">销售知识库</div>
+        <div style="font-size:12px;color:var(--subtle)" id="kbset-hero-sub"></div></div>
+    </div>
+    <div class="kbset-seg">
+      <button id="kbseg-info" onclick="kbSetSeg('info')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>基本信息</button>
+      <button id="kbseg-cycle" onclick="kbSetSeg('cycle')"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6"/><path d="M12 7v5l3 3"/></svg>体检周期</button>
+      <button id="kbseg-perm" onclick="kbSetSeg('perm')"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>权限</button>
+    </div>
+    <div id="kbset-panel"></div>
+  </div>
+</aside>
+
+<!-- 扫描来源弹窗 -->
+<div class="modal-scrim" id="scanModal" onclick="if(event.target===this)closeScan()">
+  <div class="modal">
+    <div class="modal-head">
+      <button class="modal-x" onclick="closeScan()">✕</button>
+      <h3>选择扫描来源</h3>
+      <p>平台只读取并扫描，不会上传或移动任何文件。原始数据始终留在你本地。</p>
+    </div>
+
+    <!-- 一级：来源类型 -->
+    <div class="modal-body" id="scan-step1">
+      <div class="src-item" onclick="runScanLocal()">
+        <div class="src-ic local"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+        <div class="src-meta"><div class="src-name">本地目录</div><div class="src-sub">只读扫描服务器本地目录，文件不离开本机</div></div>
+        <div class="src-act"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      </div>
+      <div class="src-item" onclick="scanStep(2)">
+        <div class="src-ic kb"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <div class="src-meta"><div class="src-name">知识库</div><div class="src-sub">扫描系统中已有的知识库</div></div>
+        <div class="src-act"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+
+    <!-- 二级：选择已有知识库 -->
+    <div class="modal-body" id="scan-step2" style="display:none">
+      <button class="kb-back" onclick="scanStep(1)"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>返回</button>
+      <div id="kb-pick-list"></div>
+    </div>
+
+    <div class="modal-foot" id="scan-foot2" style="display:none">
+      <button class="btn" onclick="scanStep(1)">取消</button>
+      <button class="btn btn-primary" onclick="runScanKB()">扫描所选知识库</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- mock 数据 ---------- */
+var KBS=[
+  {id:1,name:'销售知识库',icon:'kbi-1',ic:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',desc:'客户案例、报价模板、销售手册',docs:12,grant:'销售部 + 销售总监',people:12,staffAccess:true,creator:'周颜',created:'2026-03-12',cycle:'每周一次',roles:[['销售部','可读','部门'],['销售总监','可读·可管理','成员'],['周颜','创建者·全权','成员']]},
+  {id:2,name:'技术知识库',icon:'kbi-2',ic:'M16 18l6-6-6-6M8 6l-6 6 6 6',desc:'技术方案、架构文档、项目资料',docs:34,grant:'技术部',people:12,staffAccess:false,creator:'李工',created:'2026-02-20',cycle:'每两周一次',roles:[['技术部','可读','部门'],['研发组','可读·可管理','项目'],['李工','创建者·全权','成员']]},
+  {id:3,name:'全员公开库',icon:'kbi-3',ic:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M2 12h20',desc:'公司制度、产品手册、对外资料',docs:56,grant:'全体员工',people:24,staffAccess:true,creator:'周颜',created:'2026-01-08',cycle:'每月一次',roles:[['全体员工','可读','全员'],['行政部','可读·可管理','部门'],['周颜','创建者·全权','成员']]},
+  {id:4,name:'人事知识库',icon:'kbi-4',ic:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0 0',desc:'花名册、薪酬制度、考勤规则',docs:18,grant:'HR + 管理层',people:5,staffAccess:false,creator:'王敏',created:'2026-02-01',cycle:'每周一次',roles:[['HR','可读·可管理','部门'],['管理层','可读','虚拟'],['王敏','创建者·全权','成员']]},
+];
+var DOCS=[
+  {n:'2026客户案例集.docx',p:'已脱敏',t:'doc',sens:'int',gov:'live'},
+  {n:'报价模板2026.xlsx',p:'通用模板',t:'xls',sens:'pub',gov:'live'},
+  {n:'销售手册.pdf',p:'对内',t:'pdf',sens:'int',gov:'live'},
+  {n:'2026客户总表.xlsx',p:'含敏感 · 治理中',t:'xls',sens:'conf',gov:'review'},
+];
+
+var role='admin';
+function switchRole(){
+  role=document.getElementById('role').value;
+  var admin=role==='admin';
+  document.querySelectorAll('.admin-only').forEach(function(el){el.style.display=admin?'':'none'});
+  document.getElementById('uava').textContent=admin?'周':'张';
+  document.getElementById('uname').childNodes[0].textContent=admin?'周颜':'张涛';
+  document.getElementById('urole').textContent=admin?'管理员':'市场部 · 普通员工';
+  document.getElementById('kb-sub').textContent=admin
+    ? '你有权访问的知识库。看得见，就代表你有权读。点卡片查看文档，点卡片上的图标直接配置。'
+    : '你有权访问的知识库。这里只显示你能读的——没权限的库不会出现。看得见，就代表你能读。';
+  renderKBs();
+  if(role!=='admin') closeKBSet();
+  if(!admin && ['checkup','workbench','authorize','scandetail','report','history'].indexOf(curPage)>=0) go('kb');
+}
+var curKB=1, kbViewMode='card';
+function svgPaths(ic){return ic.split(' M').map(function(s,i){return '<path d="'+(i?'M':'')+s+'"/>'}).join('');}
+function visibleKBs(){var admin=role==='admin';return admin?KBS:KBS.filter(function(k){return k.staffAccess});}
+
+function renderKBs(){ renderOverview(); }
+function kbView(m){ kbViewMode=m;
+  document.getElementById('vt-card').classList.toggle('on',m==='card');
+  document.getElementById('vt-list').classList.toggle('on',m==='list');
+  renderOverview();
+}
+function renderOverview(){
+  var admin=role==='admin', list=visibleKBs();
+  var box=document.getElementById('kb-overview');
+  if(kbViewMode==='card'){
+    box.innerHTML='<div class="kb-cards">'+list.map(function(k){
+      var acts = admin ? '<div class="kbcard2-actions">'+
+        '<div class="kbc2-act" title="基本信息" onclick="event.stopPropagation();openKBSet(\'info\','+k.id+')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>信息</div>'+
+        '<div class="kbc2-act" title="体检周期" onclick="event.stopPropagation();openKBSet(\'cycle\','+k.id+')"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6"/><path d="M12 7v5l3 3"/></svg>体检</div>'+
+        '<div class="kbc2-act" title="权限管理" onclick="event.stopPropagation();openKBSet(\'perm\','+k.id+')"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>权限</div>'+
+        '</div>' : '';
+      return '<div class="kbcard2"><div class="kbcard2-body" onclick="openKB('+k.id+')">'+
+        '<div class="kbcard2-top"><div class="kbcard2-ic '+k.icon+'"><svg viewBox="0 0 24 24">'+svgPaths(k.ic)+'</svg></div>'+
+        '<div><div class="kbcard2-name">'+k.name+'</div><div class="kbcard2-sub">'+k.desc+'</div></div></div>'+
+        '<div class="kbcard2-stats">'+
+          '<span class="kbc2-stat"><svg viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg><b>'+k.docs+'</b> 文档</span>'+
+          '<span class="kbc2-stat"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><b>'+k.people+'</b> 人可读</span>'+
+        '</div></div>'+acts+'</div>';
+    }).join('')+'</div>';
+  } else {
+    box.innerHTML='<div class="kb-rows">'+list.map(function(k){
+      var acts = admin ? '<div class="kbrow-acts">'+
+        '<div class="kbrow-act" title="基本信息" onclick="openKBSet(\'info\','+k.id+')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>'+
+        '<div class="kbrow-act" title="体检周期" onclick="openKBSet(\'cycle\','+k.id+')"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6"/><path d="M12 7v5l3 3"/></svg></div>'+
+        '<div class="kbrow-act" title="权限管理" onclick="openKBSet(\'perm\','+k.id+')"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>'+
+        '</div>' : '';
+      return '<div class="kbrow"><div class="kbrow-main" onclick="openKB('+k.id+')">'+
+        '<div class="kbrow-ic '+k.icon+'"><svg viewBox="0 0 24 24">'+svgPaths(k.ic)+'</svg></div>'+
+        '<div style="min-width:0"><div class="kbrow-name">'+k.name+'</div><div class="kbrow-sub">'+k.desc+'</div></div></div>'+
+        '<div class="kbrow-stats"><div class="kbrow-stat"><div class="kbrow-stat-n">'+k.docs+'</div><div class="kbrow-stat-l">文档</div></div>'+
+        '<div class="kbrow-stat"><div class="kbrow-stat-n">'+k.people+'</div><div class="kbrow-stat-l">可读</div></div></div>'+
+        acts+'</div>';
+    }).join('')+'</div>';
+  }
+}
+
+/* 进入某知识库的文档列表 */
+function renderKBDRail(){
+  var admin=role==='admin', list=visibleKBs();
+  var html=list.map(function(k){
+    return '<div class="rail-item'+(k.id===curKB?' on':'')+'" title="'+k.name+'" onclick="switchKBDoc('+k.id+')">'+
+      '<div class="rail-ic '+k.icon+'"><svg viewBox="0 0 24 24">'+svgPaths(k.ic)+'</svg></div>'+
+      '<div class="rail-name">'+k.name.replace('知识库','库').replace('全员公开库','公开库')+'</div></div>';
+  }).join('');
+  if(admin) html+='<div class="rail-sep"></div><div class="rail-add" title="新建知识库" onclick="EAItoast(\'（Demo）新建知识库\')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>';
+  document.getElementById('kbd-rail').innerHTML=html;
+}
+function switchKBDoc(id){ fillKBDocs(id); renderKBDRail(); }
+function fillKBDocs(id){
+  curKB=id;
+  var k=KBS.find(function(x){return x.id===id});
+  document.getElementById('kbd-name').textContent=k.name;
+  document.getElementById('kbd-title').textContent=k.name;
+  document.getElementById('kbd-sub').textContent=k.docs+' 份文档 · 授权 '+k.people+' 人可读 · 创建者 '+k.creator;
+  var ico={xls:['fi-xls','XLS'],doc:['fi-doc','DOC'],pdf:['fi-pdf','PDF']};
+  var sb={conf:['b-conf','bd-conf','机密'],int:['b-int','bd-int','内部'],pub:['b-pub','bd-pub','公开']};
+  var gb={live:['g-live','已入库 · AI 可检索'],review:['g-review','治理中 · 待批准'],iso:['g-iso','已隔离']};
+  document.getElementById('kbdocs-tbl').innerHTML=
+    '<div class="tr thead" style="grid-template-columns:2.4fr 1fr 1.4fr"><div class="th">文档</div><div class="th">敏感级别</div><div class="th">状态</div></div>'+
+    DOCS.map(function(d){
+      return '<div class="tr trow" style="grid-template-columns:2.4fr 1fr 1.4fr" onclick="openDrawer()">'+
+        '<div class="fname"><div class="ficon '+ico[d.t][0]+'">'+ico[d.t][1]+'</div>'+
+        '<div><div class="ftitle">'+d.n+'</div><div class="fpath">'+d.p+'</div></div></div>'+
+        '<div><span class="badge '+sb[d.sens][0]+'"><span class="b-dot '+sb[d.sens][1]+'"></span>'+sb[d.sens][2]+'</span></div>'+
+        '<div><span class="gov-pill '+gb[d.gov][0]+'">'+gb[d.gov][1]+'</span></div></div>';
+    }).join('');
+}
+function openKB(id){
+  fillKBDocs(id);
+  renderKBDRail();
+  go('kbdocs');
+}
+
+/* 知识库设置抽屉（图标化，三段：基本信息/体检周期/权限） */
+function openKBSet(seg, id){
+  if(id) curKB=id;
+  var k=KBS.find(function(x){return x.id===curKB});
+  var ic=document.getElementById('kbset-hero-ic'); ic.className='kbset-hero-ic '+k.icon;
+  ic.innerHTML='<svg viewBox="0 0 24 24">'+svgPaths(k.ic)+'</svg>';
+  document.getElementById('kbset-hero-name').textContent=k.name;
+  document.getElementById('kbset-hero-sub').textContent=k.docs+' 份文档 · 创建者 '+k.creator;
+  kbSetSeg(seg||'info');
+  document.getElementById('kbset-drawer').classList.add('show');
+  document.getElementById('kbset-scrim').classList.add('show');
+}
+function closeKBSet(){
+  document.getElementById('kbset-drawer').classList.remove('show');
+  document.getElementById('kbset-scrim').classList.remove('show');
+}
+function kbSetSeg(seg){
+  ['info','cycle','perm'].forEach(function(s){document.getElementById('kbseg-'+s).classList.toggle('on',s===seg)});
+  var k=KBS.find(function(x){return x.id===curKB});
+  var p=document.getElementById('kbset-panel');
+  if(seg==='info'){
+    p.innerHTML=
+      '<div class="iset-row"><div class="iset-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>'+
+        '<div class="iset-meta"><div class="iset-k">创建者</div><div class="iset-v">'+k.creator+'</div></div></div>'+
+      '<div class="iset-row"><div class="iset-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>'+
+        '<div class="iset-meta"><div class="iset-k">创建时间</div><div class="iset-v">'+k.created+'</div></div></div>'+
+      '<div class="iset-row"><div class="iset-ic"><svg viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg></div>'+
+        '<div class="iset-meta"><div class="iset-k">文档数</div><div class="iset-v">'+k.docs+' 份</div></div></div>'+
+      '<div class="iset-row"><div class="iset-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>'+
+        '<div class="iset-meta"><div class="iset-k">授权人数</div><div class="iset-v">'+k.people+' 人可读</div></div></div>';
+  } else if(seg==='cycle'){
+    p.innerHTML=
+      '<div class="iset-row"><div class="iset-ic"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6"/></svg></div>'+
+        '<div class="iset-meta"><div class="iset-k">自动体检周期</div><div class="iset-v">定期复检，保持知识新鲜</div></div>'+
+        '<div class="iset-ctrl"><select class="iset-select" onchange="EAItoast(\'（Demo）已更新体检周期\')">'+
+          ['每周一次','每两周一次','每月一次','关闭'].map(function(o){return '<option'+(k.cycle===o?' selected':'')+'>'+o+'</option>'}).join('')+
+        '</select></div></div>'+
+      '<div class="iset-row"><div class="iset-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>'+
+        '<div class="iset-meta"><div class="iset-k">下次体检</div><div class="iset-v">3 天后</div></div></div>'+
+      '<div class="iset-row"><div class="iset-ic"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>'+
+        '<div class="iset-meta"><div class="iset-k">上次健康分</div><div class="iset-v" style="color:var(--green)">71 · 良好</div></div></div>'+
+      '<div style="margin-top:14px"><button class="btn" style="width:100%;justify-content:center" onclick="closeKBSet();openScan()"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>立即体检一次</button></div>';
+  } else {
+    var scopeCls={'部门':'pr-dept','项目':'pr-proj','虚拟':'pr-virt','全员':'pr-all','成员':'pr-member'};
+    var permCls=function(pm){return pm.indexOf('全权')>=0?'owner':(pm.indexOf('管理')>=0?'manage':'')};
+    p.innerHTML=k.roles.map(function(r){var sc=scopeCls[r[2]]||'pr-member';
+      return '<div class="prole"><div class="prole-av '+sc+'">'+r[0].charAt(0)+'</div>'+
+        '<div class="prole-meta"><div class="prole-name">'+r[0]+'</div><div class="prole-scope">'+r[2]+'</div></div>'+
+        '<span class="prole-perm '+permCls(r[1])+'">'+r[1]+'</span>'+
+        '<div class="prole-x" onclick="EAItoast(\'（Demo）移除角色\')"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>';
+    }).join('')+
+    '<div class="add-role" onclick="EAItoast(\'（Demo）添加角色：选部门/成员/项目，设可读或可管理\')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加角色</div>'+
+    '<p style="font-size:11.5px;color:var(--subtle);margin-top:12px;line-height:1.6">可读 = 能在 AI 问答检索本库；可管理 = 还能上传、治理、改配置。库内文档自动继承授权，无需逐份设置。</p>';
+  }
+}
+
+var curPage='kb';
+function go(p){
+  curPage=p;
+  document.querySelectorAll('.page').forEach(function(x){x.classList.remove('on')});
+  document.getElementById('page-'+p).classList.add('on');
+  // 子页面归属父级导航高亮
+  var navKey = (p==='report'||p==='history'||p==='scandetail') ? 'checkup' : (p==='kbdocs' ? 'kb' : p);
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.dataset.nav===navKey)});
+  // 进入体检页默认显示摘要而非展开的报告
+  if(p==='checkup'){ var s=document.getElementById('ck-summary'),f=document.getElementById('ck-fullreport');
+    if(s&&f){s.style.display='block';f.style.display='none';} }
+  // 进入所有报告页默认显示列表而非详情
+  if(p==='history'){ var l=document.getElementById('allreports-list'),d=document.getElementById('allreports-detail');
+    if(l&&d){l.style.display='flex';d.style.display='none';} }
+  document.querySelector('.main').scrollTop=0;
+}
+
+function toggleG(el){el.classList.toggle('on');
+  document.getElementById('gsel').textContent=document.querySelectorAll('#page-workbench .tg-check.on').length;}
+function toggleGrant(el){el.classList.toggle('off');
+  var n=0;document.querySelectorAll('#page-authorize .toggle:not(.off)').forEach(function(t){
+    var sub=t.closest('.grant-row').querySelector('.grant-sub').textContent;
+    var m=sub.match(/(\d+)\s*人/);if(m)n+=parseInt(m[1]);});
+  document.getElementById('auth-count').textContent=n;}
+
+function openDrawer(){document.getElementById('drawer').classList.add('show');document.getElementById('scrim').classList.add('show');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('show');document.getElementById('scrim').classList.remove('show');}
+
+/* 扫描来源弹窗 */
+function openScan(){scanStep(1);document.getElementById('scanModal').classList.add('show');}
+function closeScan(){document.getElementById('scanModal').classList.remove('show');}
+function scanStep(n){
+  document.getElementById('scan-step1').style.display=n===1?'block':'none';
+  document.getElementById('scan-step2').style.display=n===2?'block':'none';
+  document.getElementById('scan-foot2').style.display=n===2?'flex':'none';
+  if(n===2) renderKBPick();
+}
+function renderKBPick(){
+  document.getElementById('kb-pick-list').innerHTML=KBS.map(function(k){
+    return '<div class="kb-pick" onclick="this.classList.toggle(\'on\')">'+
+      '<div class="kb-pick-ic '+k.icon+'"><svg viewBox="0 0 24 24">'+
+      k.ic.split(' M').map(function(s,i){return '<path d="'+(i?'M':'')+s+'"/>'}).join('')+'</svg></div>'+
+      '<div style="flex:1;min-width:0"><div class="kb-pick-name">'+k.name+'</div>'+
+      '<div class="kb-pick-meta">'+k.docs+' 份文档 · 授权 '+k.people+' 人</div></div>'+
+      '<div class="kb-pick-check"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div></div>';
+  }).join('');
+}
+function runScanKB(){
+  var n=document.querySelectorAll('#kb-pick-list .kb-pick.on').length;
+  if(!n){EAItoast('请先选择要扫描的知识库');return;}
+  var names=[];
+  document.querySelectorAll('#kb-pick-list .kb-pick.on').forEach(function(p){
+    names.push(p.querySelector('.kb-pick-name').textContent);
+  });
+  closeScan();
+  startScan(names.map(function(nm){return {type:'kb',name:nm}}));
+}
+function runScanLocal(){
+  closeScan();
+  startScan([{type:'dir',name:'\\\\nas\\company\\智能制造资料包'}]);
+}
+
+/* 扫描详情：模拟进度后跳完成 */
+var scanTimer=null;
+function startScan(sources){
+  go('scandetail');
+  // 渲染数据源标签
+  document.getElementById('scanSrcs').innerHTML=sources.map(function(s){
+    var icon=s.type==='dir'
+      ? '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'
+      : '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>';
+    return '<span class="src-tag"><svg viewBox="0 0 24 24">'+icon+'</svg>'+s.name+'</span>';
+  }).join('');
+  document.getElementById('scanTitle').textContent='正在扫描 '+sources.length+' 个数据源…';
+  // 重置
+  var pct=0, files=0, t0=Date.now();
+  setStep(1);
+  document.getElementById('scanDoneBar').style.display='none';
+  document.getElementById('scanPctL').textContent='扫描中';
+  clearInterval(scanTimer);
+  scanTimer=setInterval(function(){
+    pct=Math.min(100, pct + Math.random()*9 + 4);
+    files=Math.round(28*pct/100);
+    document.getElementById('scanPct').textContent=Math.round(pct)+'%';
+    document.getElementById('scanFill').setAttribute('stroke-dashoffset', 314*(1-pct/100));
+    document.getElementById('slFiles').textContent=files;
+    document.getElementById('slSens').textContent=Math.round(72*pct/100);
+    document.getElementById('slPerm').textContent=Math.round(28*pct/100);
+    document.getElementById('slDur').textContent=Math.round((Date.now()-t0)/1000)+'s';
+    if(pct>=35) setStep(2);
+    if(pct>=75) setStep(3);
+    if(pct>=100){
+      clearInterval(scanTimer);
+      setStep(4);
+      document.getElementById('scanPctL').textContent='已完成';
+      document.getElementById('scanDoneBar').style.display='block';
+    }
+  }, 420);
+}
+function setStep(active){
+  for(var i=1;i<=3;i++){
+    var el=document.getElementById('sstep'+i);
+    el.className='scan-step-row '+(i<active?'done':(i===active?'active':'pending'));
+    el.querySelector('.scan-step-ic').innerHTML = i<active
+      ? '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>' : '<svg viewBox="0 0 24 24"></svg>';
+  }
+}
+
+/* 体检页：原位展开/收起完整报告（不跳页） */
+function showFullReport(){
+  var mount=document.getElementById('ck-report-mount');
+  if(!mount.innerHTML.trim()){
+    mount.innerHTML=document.querySelector('#page-report .rep-wrap').innerHTML;
+  }
+  document.getElementById('ck-summary').style.display='none';
+  document.getElementById('ck-fullreport').style.display='block';
+  document.querySelector('.main').scrollTop=0;
+}
+function hideFullReport(){
+  document.getElementById('ck-fullreport').style.display='none';
+  document.getElementById('ck-summary').style.display='block';
+  document.querySelector('.main').scrollTop=0;
+}
+
+/* 所有报告页：行原位展开为详情 / 收起回列表 */
+function expandReportRow(id, src, time, score){
+  document.getElementById('ard-title').textContent='完整体检报告';
+  document.getElementById('ard-sub').textContent=src+' · 编号 '+id+' · '+time+' · 健康分 '+score;
+  var mount=document.getElementById('ard-mount');
+  mount.innerHTML=document.querySelector('#page-report .rep-wrap').innerHTML;
+  document.getElementById('allreports-list').style.display='none';
+  document.getElementById('allreports-detail').style.display='block';
+  document.querySelector('.main').scrollTop=0;
+}
+function collapseReportRow(){
+  document.getElementById('allreports-detail').style.display='none';
+  document.getElementById('allreports-list').style.display='flex';
+  document.querySelector('.main').scrollTop=0;
+}
+
+/* QA 四个问不出 */
+var ANSWERS={
+  sensitive:{q:'客户张伟的银行卡号是多少？',blocked:false,a:'根据「销售知识库 · 2026客户案例集」，张伟的银行卡号为 <b>6228 **** **** **** 012</b>（已脱敏）。完整卡号属敏感信息，不在 AI 问答中提供。',cite:'来源：2026客户案例集.docx · 已脱敏'},
+  perm:{q:'财务部的工资表里，最高工资是多少？',blocked:true,a:'未找到你有权访问的相关知识。工资相关内容在「人事知识库」，你（市场部）没有该库的访问权限，因此无法检索。'},
+  version:{q:'采购合同的最终金额是多少？',blocked:false,a:'根据「销售知识库」中合并后的当前版本，采购合同最终金额为 <b>¥1,280,000</b>。此前存在 6 个历史版本，已合并，旧版本不参与问答以免误导。',cite:'来源：采购合同_最终版.docx · v7（已合并）'},
+  normal:{q:'销售手册里的报价流程是什么？',blocked:false,a:'报价流程分四步：① 客户需求确认 → ② 套用报价模板核算成本 → ③ 销售总监审批 → ④ 正式报价单发出。',cite:'来源：销售手册.pdf · 第 3 章'},
+};
+function ask(key){pushQA(ANSWERS[key]);}
+function askFree(){var v=document.getElementById('qa-in').value.trim();if(!v)return;
+  pushQA({q:v,blocked:false,a:'（Demo）这是模拟回答。真实环境会基于你有权访问的知识库做权限过滤后检索并附来源。',cite:''});
+  document.getElementById('qa-in').value='';}
+function pushQA(item){
+  var chat=document.getElementById('chat');
+  chat.innerHTML+='<div class="bubble me">'+item.q+'</div>';
+  var cls=item.blocked?'bubble ai blocked':'bubble ai';
+  var cite=item.cite?'<div class="cite">'+item.cite+'</div>':'';
+  chat.innerHTML+='<div class="'+cls+'">'+item.a+cite+'</div>';
+  chat.scrollTop=chat.scrollHeight;
+}
+
+function EAItoast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2200);}
+function toggleAcc(el){ el.parentElement.classList.toggle('open'); }
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeDrawer();closeScan();closeKBSet();}});
+document.querySelectorAll('.chip').forEach(function(c){c.onclick=function(){document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});c.classList.add('on')}});
+
+renderKBs();
+</script>
+</body>
+</html>
