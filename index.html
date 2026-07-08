@@ -484,7 +484,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 <div class="app">
 
   <aside class="side">
-    <div class="side-brand"><div class="bmark">E</div><div><div class="bname">企业数据上 AI</div><div class="bsub">深圳沃德外贸</div></div></div>
+    <div class="side-brand"><div class="bmark">E</div><div><div class="bname">企业数据上 AI</div><div class="bsub">深圳沃德（演示）外贸</div></div></div>
 
     <div class="role-switch">
       <label>演示视角切换</label>
@@ -506,7 +506,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 
     <div class="side-foot">
       <div class="poweredby">Powered by 企业数据上 AI</div>
-      <div class="userfoot"><div class="avatar" id="uava">周</div><div class="who" id="uname">周颜<small id="urole">管理员</small></div></div>
+      <div class="userfoot"><div class="avatar" id="uava">周</div><div class="who" id="uname">周工（演示）<small id="urole">管理员</small></div></div>
     </div>
   </aside>
 
@@ -1016,9 +1016,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
             <div class="tgroup">
               <div class="tg-head"><div class="tg-check on" onclick="toggleG(this)"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
                 <div class="tg-name">敏感信息脱敏</div><span class="tg-badge">需你批准</span></div>
-              <div class="diff"><div class="diff-before">440301199008120031</div>
+              <div class="diff"><div class="diff-before">440311111111110031（演示）</div>
                 <div class="diff-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-                <div class="diff-after">4403**********0031</div></div>
+                <div class="diff-after">4403**********0031（演示）</div></div>
             </div>
 
             <div class="tgroup">
@@ -1059,8 +1059,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 
       <div class="sec-h">授权给（部门 / 成员 / 项目）</div>
       <div class="grant-row"><div class="grant-l"><div class="grant-av">销</div><div><div class="grant-name">销售部</div><div class="grant-sub">部门 · 8 人</div></div></div><div class="toggle" onclick="toggleGrant(this)"></div></div>
-      <div class="grant-row"><div class="grant-l"><div class="grant-av">李</div><div><div class="grant-name">李明 · 销售总监</div><div class="grant-sub">成员</div></div></div><div class="toggle" onclick="toggleGrant(this)"></div></div>
-      <div class="grant-row"><div class="grant-l"><div class="grant-av" style="background:var(--brand-bg);color:var(--brand)">南</div><div><div class="grant-name">南沙基建项目组</div><div class="grant-sub">虚拟项目 · 跨部门 5 人</div></div></div><div class="toggle off" onclick="toggleGrant(this)"></div></div>
+      <div class="grant-row"><div class="grant-l"><div class="grant-av">李</div><div><div class="grant-name">李总演示 · 销售总监</div><div class="grant-sub">成员</div></div></div><div class="toggle" onclick="toggleGrant(this)"></div></div>
+      <div class="grant-row"><div class="grant-l"><div class="grant-av" style="background:var(--brand-bg);color:var(--brand)">南</div><div><div class="grant-name">南沙基建演示项目组</div><div class="grant-sub">虚拟项目 · 跨部门 5 人</div></div></div><div class="toggle off" onclick="toggleGrant(this)"></div></div>
       <div class="grant-row"><div class="grant-l"><div class="grant-av">财</div><div><div class="grant-name">财务部</div><div class="grant-sub">部门 · 3 人</div></div></div><div class="toggle off" onclick="toggleGrant(this)"></div></div>
 
       <div class="preview-who">
@@ -1175,8 +1175,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 /* ---------- mock 数据 ---------- */
 var KBS=[
   {id:1,name:'销售知识库',icon:'kbi-1',ic:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',desc:'客户案例、报价模板、销售手册',docs:12,grant:'销售部 + 销售总监',people:12,staffAccess:true,creator:'周颜',created:'2026-03-12',cycle:'每周一次',roles:[['销售部','可读','部门'],['销售总监','可读·可管理','成员'],['周颜','创建者·全权','成员']]},
-  {id:2,name:'技术知识库',icon:'kbi-2',ic:'M16 18l6-6-6-6M8 6l-6 6 6 6',desc:'技术方案、架构文档、项目资料',docs:34,grant:'技术部',people:12,staffAccess:false,creator:'李工',created:'2026-02-20',cycle:'每两周一次',roles:[['技术部','可读','部门'],['研发组','可读·可管理','项目'],['李工','创建者·全权','成员']]},
-  {id:3,name:'全员公开库',icon:'kbi-3',ic:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M2 12h20',desc:'公司制度、产品手册、对外资料',docs:56,grant:'全体员工',people:24,staffAccess:true,creator:'周颜',created:'2026-01-08',cycle:'每月一次',roles:[['全体员工','可读','全员'],['行政部','可读·可管理','部门'],['周颜','创建者·全权','成员']]},
+  {id:2,name:'技术知识库',icon:'kbi-2',ic:'M16 18l6-6-6-6M8 6l-6 6 6 6',desc:'技术方案、架构文档、项目资料',docs:34,grant:'技术部',people:12,staffAccess:false,creator:'李工演示',created:'2026-02-20',cycle:'每两周一次',roles:[['技术部','可读','部门'],['研发组','可读·可管理','项目'],['李工','创建者·全权','成员']]},
+  {id:3,name:'全员公开库',icon:'kbi-3',ic:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M2 12h20',desc:'公司制度、产品手册、对外资料',docs:56,grant:'全体员工',people:24,staffAccess:true,creator:'周工演示',created:'2026-01-08',cycle:'每月一次',roles:[['全体员工','可读','全员'],['行政部','可读·可管理','部门'],['周颜','创建者·全权','成员']]},
   {id:4,name:'人事知识库',icon:'kbi-4',ic:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0 0',desc:'花名册、薪酬制度、考勤规则',docs:18,grant:'HR + 管理层',people:5,staffAccess:false,creator:'王敏',created:'2026-02-01',cycle:'每周一次',roles:[['HR','可读·可管理','部门'],['管理层','可读','虚拟'],['王敏','创建者·全权','成员']]},
 ];
 var DOCS=[
@@ -1192,7 +1192,7 @@ function switchRole(){
   var admin=role==='admin';
   document.querySelectorAll('.admin-only').forEach(function(el){el.style.display=admin?'':'none'});
   document.getElementById('uava').textContent=admin?'周':'张';
-  document.getElementById('uname').childNodes[0].textContent=admin?'周颜':'张涛';
+  document.getElementById('uname').childNodes[0].textContent=admin?'周工演示':'吴总演示';
   document.getElementById('urole').textContent=admin?'管理员':'市场部 · 普通员工';
   document.getElementById('kb-sub').textContent=admin
     ? '你有权访问的知识库。看得见，就代表你有权读。点卡片查看文档，点卡片上的图标直接配置。'
